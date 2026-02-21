@@ -155,7 +155,6 @@
         }
         .lock-box:hover { background: var(--desk-border); color: #fff; }
 
-        /* --- NEW: HIDE DESK BUTTON & DISABLED STATE --- */
         .hide-desk-btn {
             position: absolute; top: 5px; left: 5px; width: 28px; height: 28px;
             background: var(--ui-paper); border-radius: 50%; 
@@ -164,6 +163,16 @@
             color: #e74c3c; font-size: 12px; font-weight: bold;
         }
         .hide-desk-btn:hover { background: #e74c3c; color: #fff; }
+
+        /* --- NEW: GENDER TOGGLE BUTTON --- */
+        .gender-btn {
+            position: absolute; top: 38px; left: 5px; width: 28px; height: 28px;
+            background: var(--ui-paper); border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; z-index: 20; transition: 0.2s; border: 2px solid #2ecc71;
+            color: #2ecc71; font-size: 14px;
+        }
+        .gender-btn:hover { background: #2ecc71; color: #fff; }
 
         .seat.is-disabled {
             background: rgba(0,0,0,0.15); border: 2px dashed rgba(255,255,255,0.3);
@@ -242,6 +251,7 @@
             .seat-number { top: auto; bottom: 5px; right: 8px; font-size: 10px; }
             .lock-box { top: auto; bottom: 5px; right: 35px; width: 24px; height: 24px; background: rgba(255,255,255,0.8);}
             .hide-desk-btn { top: auto; bottom: 5px; left: auto; right: 65px; width: 24px; height: 24px;}
+            .gender-btn { top: auto; bottom: 5px; left: auto; right: 95px; width: 24px; height: 24px; background: rgba(255,255,255,0.8); font-size: 12px;}
             .modal-content { margin: 5% auto; height: 90vh; max-height: 90vh; width: 95%;}
         }
     </style>
@@ -552,7 +562,6 @@
     function initSeats() {
         seats = [];
         let maxS = totalRows * totalCols;
-        // Update Grid CSS dynamically
         document.getElementById('classroom').style.gridTemplateColumns = `repeat(${totalCols}, 1fr)`;
 
         for (let i = 0; i < maxS; i++) {
@@ -576,7 +585,6 @@
                     seatDiv.className = `seat is-disabled`;
                     seatDiv.onclick = (e) => toggleDisable(index, e);
                 } else {
-                    // Agar warna row berulang kalo lebih dari 3 baris
                     const rowColorIndex = row % 3;
                     seatDiv.className = `seat seat-row-${rowColorIndex} ${seatData.locked ? 'is-locked' : ''}`;
                     
@@ -591,6 +599,7 @@
 
                     seatDiv.innerHTML = `
                         <div class="hide-desk-btn" onclick="toggleDisable(${index}, event)" title="Sembunyikan Meja">✖</div>
+                        <div class="gender-btn" onclick="toggleGender(${index}, event)" title="Ubah Gender Manual">🔄</div>
                         <div class="lock-box" onclick="toggleLock(${index}, event)" title="Kunci Kursi">${lockIcon}</div>
                         <div class="char-img-container">
                             <img src="${avatarUrl}" class="char-img" alt="Foto Siswa" onerror="handleImageError(this, '${nameHTML}')">
@@ -615,6 +624,20 @@
             seats[index].currentName = "";
         }
         distributeNames();
+        renderSeats();
+    }
+
+    // --- NEW: TOGGLE GENDER LOGIC ---
+    function toggleGender(index, e) {
+        e.stopPropagation();
+        let name = seats[index].currentName;
+        if (!name) return; // Kalau meja kosong, nggak ada yang diubah
+        
+        // Cek gender saat ini, lalu set sebaliknya ke array knownGenders
+        let currentGender = detectGender(name);
+        knownGenders[name] = currentGender === "M" ? "F" : "M";
+        
+        // Render ulang biar avatarnya otomatis ganti
         renderSeats();
     }
 
@@ -694,7 +717,7 @@
             masterNames.push({ name: val, active: true }); 
             document.getElementById('newNameInput').value = ''; 
             renderNameList(); 
-            distributeNames(); // Biar lgsg masuk kalau ada bangku kosong
+            distributeNames(); 
             renderSeats();
         } else if (masterNames.length >= maxS) {
             alert(`Kapasitas Kelas Penuh (Maks ${maxS} Sesuai bangku aktif)!`);
