@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Denah Tempat Duduk Kelas - FIXED</title>
+    <title>Denah Tempat Duduk Kelas</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -478,7 +478,6 @@
     <div id="classroom" class="classroom-grid"></div>
 </div>
 
-<!-- MODAL UTAMA -->
 <div id="mainModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -486,7 +485,6 @@
             <button class="close-btn" onclick="handleCloseModal()">✕</button>
         </div>
         
-        <!-- VIEW: NORMAL (Data Siswa) -->
         <div id="normalView" style="display:flex; flex-direction:column; flex:1; min-height:0;">
             <div style="font-size:13px; margin-bottom:10px; color:#7f8c8d; font-weight: bold;">
                 Total Siswa: <span id="studentCount">0</span> Siswa
@@ -508,25 +506,22 @@
             </div>
         </div>
 
-        <!-- VIEW: BULK EDIT -->
         <div id="bulkView" style="display:none; flex-direction:column; flex:1; min-height:0;">
             <p style="margin:10px 0 5px 0; font-size:13px; color:#7f8c8d; font-weight:bold;">Input nama (1 per baris):</p>
             <textarea id="bulkEditArea" class="manager-input" placeholder="BUDI&#10;SITI&#10;AYU"></textarea>
             <div style="display:flex; gap:10px; flex-shrink:0;">
-                <button class="btn-school" style="flex:1; color:#c0392b; background:#fce4ec;" onclick="handleCloseModal()">Batal</button>
+                <button class="btn-school" style="flex:1; color:#c0392b; background:#fce4ec;" onclick="handleBack()">Batal</button>
                 <button class="btn-school btn-main-action" style="flex:1;" onclick="handleSaveBulk()">SIMPAN</button>
             </div>
         </div>
 
-        <!-- VIEW: SORT -->
         <div id="sortView" style="display:none; flex-direction:column; flex:1; min-height:0;">
             <p style="margin:15px 0; font-weight:bold;">Pilih urutan:</p>
             <button class="btn-school" style="margin-bottom:10px; justify-content:center;" onclick="handleSort('alpha'); handleCloseModal();">A-Z</button>
             <button class="btn-school" style="margin-bottom:10px; justify-content:center;" onclick="handleSort('status'); handleCloseModal();">Status</button>
-            <button class="btn-school" style="background:#fce4ec; color:#c0392b; justify-content:center;" onclick="handleCloseModal()">Batal</button>
+            <button class="btn-school" style="background:#fce4ec; color:#c0392b; justify-content:center;" onclick="handleBack()">Batal</button>
         </div>
 
-        <!-- VIEW: SETTINGS -->
         <div id="settingsView" style="display:none; flex-direction:column; flex:1; min-height:0; overflow-y:auto; padding:10px 0;">
             <label style="font-weight:bold; display:block; margin-bottom:5px;">Jumlah Baris:</label>
             <input type="number" id="inputRows" class="manager-input" min="1" max="10" value="3" style="margin-bottom:15px;">
@@ -562,60 +557,80 @@
     let seats = [];
     let totalRows = 3;
     let totalCols = 6;
-    let history = [];
+    let historyData = [];
     let historyIndex = -1;
+    let modalHistory = []; // Untuk tracking navigasi Back/Esc Android
 
-    // === MODAL HANDLERS ===
-    function handleOpenManager() {
-        console.log("✅ MEMBUKA MODAL DATA SISWA");
-        document.getElementById('mainModal').classList.add('show');
-        document.getElementById('normalView').style.display = 'flex';
+    // === SISTEM NAVIGASI BARU (ANDROID/BACK SUPPORT) ===
+    function showView(viewId, title) {
+        document.getElementById('normalView').style.display = 'none';
         document.getElementById('bulkView').style.display = 'none';
         document.getElementById('sortView').style.display = 'none';
         document.getElementById('settingsView').style.display = 'none';
-        document.getElementById('modalTitle').textContent = 'BUKU ABSEN SISWA';
+
+        if(viewId) {
+            document.getElementById('mainModal').classList.add('show');
+            document.getElementById(viewId).style.display = 'flex';
+            document.getElementById('modalTitle').textContent = title;
+        } else {
+            document.getElementById('mainModal').classList.remove('show');
+        }
+    }
+
+    function pushView(viewId, title) {
+        modalHistory.push({ id: viewId, title: title });
+        history.pushState({ modal: viewId }, ''); // Melempar state ke browser/Android
+        showView(viewId, title);
+    }
+
+    function handleBack() {
+        history.back(); // Otomatis trigger listener popstate
+    }
+
+    window.addEventListener('popstate', (e) => {
+        modalHistory.pop(); // Hapus tampilan yang barusan ditutup
+        if (modalHistory.length > 0) {
+            const prev = modalHistory[modalHistory.length - 1];
+            showView(prev.id, prev.title); // Tampilkan yang sebelumnya
+        } else {
+            showView(null); // Jika habis, tutup modal sepenuhnya
+        }
+    });
+
+    // === MODAL HANDLERS ===
+    function handleOpenManager() {
+        modalHistory = [];
+        pushView('normalView', 'BUKU ABSEN SISWA');
         renderNameList();
     }
 
     function handleOpenSettings() {
-        console.log("✅ MEMBUKA MODAL SETTINGS");
-        document.getElementById('mainModal').classList.add('show');
-        document.getElementById('normalView').style.display = 'none';
-        document.getElementById('bulkView').style.display = 'none';
-        document.getElementById('sortView').style.display = 'none';
-        document.getElementById('settingsView').style.display = 'flex';
-        document.getElementById('modalTitle').textContent = '⚙️ PENGATURAN KELAS';
+        modalHistory = [];
+        pushView('settingsView', '⚙️ PENGATURAN KELAS');
         document.getElementById('inputRows').value = totalRows;
         document.getElementById('inputCols').value = totalCols;
     }
 
     function handleOpenBulk() {
-        console.log("✅ MEMBUKA MODAL BULK EDIT");
-        document.getElementById('normalView').style.display = 'none';
-        document.getElementById('bulkView').style.display = 'flex';
-        document.getElementById('sortView').style.display = 'none';
-        document.getElementById('settingsView').style.display = 'none';
-        document.getElementById('modalTitle').textContent = '📝 INPUT BANYAK';
+        pushView('bulkView', '📝 INPUT BANYAK');
         document.getElementById('bulkEditArea').value = masterNames.map(n => n.name).join('\n');
     }
 
     function handleOpenSort() {
-        console.log("✅ MEMBUKA MODAL SORT");
-        document.getElementById('normalView').style.display = 'none';
-        document.getElementById('bulkView').style.display = 'none';
-        document.getElementById('sortView').style.display = 'flex';
-        document.getElementById('settingsView').style.display = 'none';
-        document.getElementById('modalTitle').textContent = '↕️ URUTKAN DATA';
+        pushView('sortView', '↕️ URUTKAN DATA');
     }
 
     function handleCloseModal() {
-        console.log("✅ MENUTUP MODAL");
-        document.getElementById('mainModal').classList.remove('show');
+        if(modalHistory.length > 0) {
+            history.go(-modalHistory.length); // Bersihkan seluruh jejak history view saat tombol X ditekan
+            modalHistory = [];
+        } else {
+            showView(null);
+        }
     }
 
     // === ACTION HANDLERS ===
     function handleShuffle() {
-        console.log("✅ ACAK POSISI SEMUA");
         distributeNames();
         saveToHistory();
         renderSeats();
@@ -624,11 +639,9 @@
     }
 
     function handleShowStats() {
-        console.log("✅ TAMPILKAN STATISTIK");
         const panel = document.getElementById('statsPanel');
         if (panel.style.display === 'grid') {
             panel.style.display = 'none';
-            console.log("Statistik ditutup");
             return;
         }
         
@@ -645,11 +658,9 @@
             <div class="stat-card"><div class="stat-value">${occupancy}%</div><div class="stat-label">Okupansi</div></div>
         `;
         panel.style.display = 'grid';
-        console.log("Statistik ditampilkan");
     }
 
     function handlePrint() {
-        console.log("✅ CETAK");
         window.print();
     }
 
@@ -676,7 +687,7 @@
             return;
         }
         masterNames = lines.map(n => ({ name: n, active: true }));
-        seats.forEach(s => { s.currentName = ""; s.locked = false; });
+        seats.forEach(s => { s.currentName = ""; s.locked = false; delete s.manualGender; });
         distributeNames();
         saveToHistory();
         renderSeats();
@@ -734,7 +745,7 @@
         if (confirm("Reset ke data awal?")) {
             masterNames = defaultNames.map(n => ({ name: n, active: true }));
             renderNameList();
-            seats.forEach(s => { s.currentName = ""; s.locked = false; });
+            seats.forEach(s => { s.currentName = ""; s.locked = false; delete s.manualGender; });
             distributeNames();
             saveToHistory();
             renderSeats();
@@ -745,7 +756,6 @@
 
     // === JSON HANDLERS ===
     function handleSaveJSON() {
-        console.log("✅ SAVE JSON");
         const data = { masterNames, seats, totalRows, totalCols, date: new Date().toLocaleString() };
         const json = JSON.stringify(data, null, 2);
         const blob = new Blob([json], { type: 'application/json' });
@@ -759,7 +769,6 @@
     }
 
     function handleLoadJSON() {
-        console.log("✅ LOAD JSON CLICKED");
         document.getElementById('fileInput').click();
     }
 
@@ -817,8 +826,8 @@
     }
 
     function saveToHistory() {
-        history = history.slice(0, historyIndex + 1);
-        history.push(JSON.stringify({ masterNames, seats }));
+        historyData = historyData.slice(0, historyIndex + 1);
+        historyData.push(JSON.stringify({ masterNames, seats }));
         historyIndex++;
     }
 
@@ -839,12 +848,21 @@
         return n.slice(-1).match(/[AIE]/) ? "F" : "M";
     }
 
-    function getAvatarUrl(name) {
-        const gender = detectGender(name);
+    function getAvatarUrl(name, manualGender) {
+        const gender = manualGender || detectGender(name);
         const maleSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#e8f4f8"/><circle cx="50" cy="35" r="20" fill="#2c3e50"/><path d="M15 100 C 15 50, 85 50, 85 100" fill="#2c3e50"/></svg>`;
         const femaleSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#fce4ec"/><circle cx="50" cy="35" r="20" fill="#2c3e50"/><path d="M20 60 L80 60 L75 100 L25 100 Z" fill="#2c3e50"/></svg>`;
         return gender === "F" ? "data:image/svg+xml;utf8," + encodeURIComponent(femaleSvg) : "data:image/svg+xml;utf8," + encodeURIComponent(maleSvg);
     }
+
+    window.toggleGender = function(idx) {
+        const seat = seats[idx];
+        if (!seat.currentName) return;
+        const currentGender = seat.manualGender || detectGender(seat.currentName);
+        seat.manualGender = currentGender === 'M' ? 'F' : 'M';
+        renderSeats();
+        saveState();
+    };
 
     function toggleDarkMode() {
         const current = localStorage.getItem('theme');
@@ -871,7 +889,15 @@
             const j = Math.floor(Math.random() * (i + 1));
             [available[i], available[j]] = [available[j], available[i]];
         }
-        seats.forEach(seat => { if (!seat.locked && !seat.disabled) seat.currentName = available.shift() || ""; });
+        seats.forEach(seat => { 
+            if (!seat.locked && !seat.disabled) {
+                const newName = available.shift() || "";
+                if (seat.currentName !== newName) {
+                    delete seat.manualGender; // Reset settingan manual jika penghuni mejanya ganti
+                }
+                seat.currentName = newName;
+            } 
+        });
     }
 
     function renderSeats() {
@@ -889,15 +915,21 @@
                     const rowClass = `seat-row-${row % 3}`;
                     div.className = `seat ${rowClass} ${seat.locked ? 'is-locked' : ''}`;
                     const name = seat.currentName;
-                    const avatar = getAvatarUrl(name);
+                    const avatar = getAvatarUrl(name, seat.manualGender);
                     let fontSize = "text-normal";
                     if (name.length > 18) fontSize = "text-tiny";
                     else if (name.length > 12) fontSize = "text-small";
                     else if (name.length > 8) fontSize = "text-medium";
                     
+                    const currentGender = seat.manualGender || detectGender(name);
+                    const genderIcon = currentGender === 'M' ? '♂' : '♀';
+
                     div.innerHTML = `
                         <div class="hide-desk-btn" onclick="event.preventDefault(); event.stopImmediatePropagation(); seats[${idx}].disabled = true; distributeNames(); renderSeats(); saveState();">✖</div>
                         <div class="lock-box" onclick="event.preventDefault(); event.stopImmediatePropagation(); if (seats[${idx}].currentName) seats[${idx}].locked = !seats[${idx}].locked; renderSeats(); saveState();">${seat.locked ? '🔒' : '🔓'}</div>
+                        
+                        <div class="gender-btn" onclick="event.preventDefault(); event.stopImmediatePropagation(); toggleGender(${idx});">${genderIcon}</div>
+                        
                         <div class="char-img-container"><img src="${avatar}" class="char-img" alt="${name}" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=85c1e9&color=fff'"></div>
                         <div class="char-info"><div class="seat-name ${fontSize}">${name || "KOSONG"}</div></div>
                         <div class="seat-number">MEJA ${col + 1}</div>
@@ -938,10 +970,21 @@
         }
     });
 
-    // Keyboard shortcuts
+    // Keyboard shortcuts & Navigation Key Support
     document.addEventListener('keydown', (e) => {
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-        if (e.ctrlKey && e.key === 'a') { e.preventDefault(); handleShuffle(); }
+        
+        if (e.ctrlKey && e.key === 'a') { 
+            e.preventDefault(); 
+            handleShuffle(); 
+        }
+
+        // Dukungan ESC untuk kembali ke menu sebelumnya
+        if (e.key === 'Escape') {
+            if (document.getElementById('mainModal').classList.contains('show')) {
+                handleBack();
+            }
+        }
     });
 
 </script>
