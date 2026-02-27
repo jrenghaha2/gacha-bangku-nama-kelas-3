@@ -356,6 +356,13 @@
 </div>
 
 <script>
+    // === SISTEM CRYPTO SECURE RANDOM ===
+    function getSecureRandomInt(max) {
+        const randomBuffer = new Uint32Array(1);
+        window.crypto.getRandomValues(randomBuffer);
+        return randomBuffer[0] % max;
+    }
+
     // === DATA KELAS ===
     const knownGenders = {
         "RAHMA": "F", "TASYA": "F", "AKHSIN AMIRULLOH": "M",
@@ -377,9 +384,10 @@
     let isTeacherPOV = false; 
     let customBackground = null;
     
-    // === DATA PICKER ===
+    // === DATA PICKER & GENDER ===
     let pickerHistory = []; 
     let allowRepeatPick = false; 
+    let customGenders = {}; // Menyimpan perubahan gender yang diset manual oleh user
 
     function showView(viewId, title) {
         document.getElementById('normalView').style.display = 'none';
@@ -525,13 +533,15 @@
 
         let i = 0;
         const loop = setInterval(() => {
-            const rand = available[Math.floor(Math.random() * available.length)];
+            const randIndex = getSecureRandomInt(available.length);
+            const rand = available[randIndex];
             display.innerText = rand;
             display.style.color = "";
 
             if (i++ > 15) {
                 clearInterval(loop);
-                const winner = available[Math.floor(Math.random() * available.length)];
+                const winnerIndex = getSecureRandomInt(available.length);
+                const winner = available[winnerIndex];
                 
                 pickerHistory.push({
                     name: winner,
@@ -622,7 +632,7 @@
         const maxS = getActiveSeatCount();
         if (lines.length > maxS) { showToast(`Max ${maxS} siswa!`, 'error'); return; }
         masterNames = lines.map(n => ({ name: n, active: true }));
-        seats.forEach(s => { s.currentName = ""; s.locked = false; delete s.manualGender; });
+        seats.forEach(s => { s.currentName = ""; s.locked = false; }); // Manual gender dihapus dari seat
         distributeNames(); saveToHistory(); renderSeats(); saveState(); handleCloseModal();
         showToast('Data disimpan ✓', 'success');
     }
@@ -657,8 +667,9 @@
     function handleResetDefault() {
         if (confirm("Reset ke data awal?")) {
             masterNames = defaultNames.map(n => ({ name: n, active: true }));
-            renderNameList(); seats.forEach(s => { s.currentName = ""; s.locked = false; delete s.manualGender; });
+            renderNameList(); seats.forEach(s => { s.currentName = ""; s.locked = false; });
             pickerHistory = [];
+            customGenders = {}; // Reset semua settingan gender manual
             distributeNames(); saveToHistory(); renderSeats(); saveState(); showToast('Data direset ✓', 'info');
         }
     }
@@ -717,7 +728,7 @@
     }
 
     function handleSaveJSON() {
-        const data = { masterNames, seats, totalRows, totalCols, customBackground, pickerHistory, allowRepeatPick, date: new Date().toLocaleString() };
+        const data = { masterNames, seats, totalRows, totalCols, customBackground, pickerHistory, allowRepeatPick, customGenders, date: new Date().toLocaleString() };
         const json = JSON.stringify(data, null, 2);
         const blob = new Blob([json], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -739,6 +750,7 @@
                     customBackground = data.customBackground || null;
                     pickerHistory = data.pickerHistory || [];
                     allowRepeatPick = data.allowRepeatPick || false;
+                    customGenders = data.customGenders || {};
                     
                     if(document.getElementById('allowRepeatCheck')) {
                         document.getElementById('allowRepeatCheck').checked = allowRepeatPick;
@@ -766,6 +778,7 @@
             customBackground = data.customBackground || null;
             pickerHistory = data.pickerHistory || [];
             allowRepeatPick = data.allowRepeatPick || false;
+            customGenders = data.customGenders || {};
             
             if(document.getElementById('allowRepeatCheck')) {
                 document.getElementById('allowRepeatCheck').checked = allowRepeatPick;
@@ -777,7 +790,7 @@
     }
 
     function saveState() { 
-        localStorage.setItem('gacha_class_fixed', JSON.stringify({ masterNames, seats, totalRows, totalCols, customBackground, pickerHistory, allowRepeatPick })); 
+        localStorage.setItem('gacha_class_fixed', JSON.stringify({ masterNames, seats, totalRows, totalCols, customBackground, pickerHistory, allowRepeatPick, customGenders })); 
     }
 
     function saveToHistory() {
@@ -799,8 +812,8 @@
         return n.slice(-1).match(/[AIE]/) ? "F" : "M";
     }
 
-    function getAvatarUrl(name, manualGender) {
-        const gender = manualGender || detectGender(name);
+    function getAvatarUrl(name) {
+        const gender = customGenders[name] || detectGender(name);
         const maleSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#e8f4f8"/><circle cx="50" cy="35" r="20" fill="#2c3e50"/><path d="M15 100 C 15 50, 85 50, 85 100" fill="#2c3e50"/></svg>`;
         const femaleSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#fce4ec"/><circle cx="50" cy="35" r="20" fill="#2c3e50"/><path d="M20 60 L80 60 L75 100 L25 100 Z" fill="#2c3e50"/></svg>`;
         return gender === "F" ? "data:image/svg+xml;utf8," + encodeURIComponent(femaleSvg) : "data:image/svg+xml;utf8," + encodeURIComponent(maleSvg);
@@ -808,8 +821,12 @@
 
     window.toggleGender = function(idx) {
         const seat = seats[idx]; if (!seat.currentName) return;
-        const currentGender = seat.manualGender || detectGender(seat.currentName);
-        seat.manualGender = currentGender === 'M' ? 'F' : 'M';
+        const name = seat.currentName;
+        const currentGender = customGenders[name] || detectGender(name);
+        
+        // Simpan manual gender berdasarkan namanya, bukan mejanya
+        customGenders[name] = currentGender === 'M' ? 'F' : 'M';
+        
         renderSeats(); saveState();
     };
 
@@ -870,15 +887,15 @@
     function distributeNames() {
         const locked = seats.filter(s => s.locked && !s.disabled && s.currentName).map(s => s.currentName);
         let available = masterNames.filter(n => n.active).map(n => n.name).filter(name => !locked.includes(name));
+        
         for (let i = available.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
+            const j = getSecureRandomInt(i + 1);
             [available[i], available[j]] = [available[j], available[i]];
         }
+        
         seats.forEach(seat => { 
             if (!seat.locked && !seat.disabled) {
-                const newName = available.shift() || "";
-                if (seat.currentName !== newName) delete seat.manualGender;
-                seat.currentName = newName;
+                seat.currentName = available.shift() || "";
             } 
         });
     }
@@ -923,13 +940,13 @@
                 } else {
                     div.className = `seat ${rowClass} ${seat.locked ? 'is-locked' : ''}`;
                     const name = seat.currentName;
-                    const avatar = getAvatarUrl(name, seat.manualGender);
+                    const avatar = getAvatarUrl(name); // Memanggil gender berdasarkan nama sekarang
                     let fontSize = "text-normal";
                     if (name.length > 18) fontSize = "text-tiny";
                     else if (name.length > 12) fontSize = "text-small";
                     else if (name.length > 8) fontSize = "text-medium";
                     
-                    const currentGender = seat.manualGender || detectGender(name);
+                    const currentGender = customGenders[name] || detectGender(name);
                     const genderIcon = currentGender === 'M' ? '♂' : '♀';
 
                     div.innerHTML = `
