@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Denah Tempat Duduk Kelas</title>
+    <title>Denah Tempat Duduk Kelas - FIXED</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -47,7 +47,7 @@
         ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
         ::-webkit-scrollbar-thumb { background: var(--ui-wood); border-radius: 4px; }
 
-        .container { width: 100%; max-width: 1200px; margin: 0 auto; }
+        .container { width: 100%; max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; }
 
         .header-section { 
             display: flex; align-items: flex-end; justify-content: flex-start; 
@@ -65,8 +65,16 @@
             flex-shrink: 0; position: relative;
             font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 20px; letter-spacing: 1px;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            transition: transform 0.3s ease, width 0.3s ease;
         }
         .teacher-desk::before { content: "🏫 ABSENSI KELAS"; font-size: 10px; opacity: 0.9; letter-spacing: 1px; margin-bottom: 2px; font-family: 'Quicksand', sans-serif; color: #f0f0f0;}
+
+        /* Style khusus Meja Guru di mode POV Guru */
+        .teacher-desk.pov-guru-mode {
+            width: 100%; 
+            grid-column: span 2 / -1; /* Mengambil 2 kolom paling kanan */
+            margin: 0;
+        }
 
         .controls { 
             display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding-bottom: 5px; 
@@ -93,31 +101,29 @@
             gap: 8px;
         }
         
-        .btn-school:hover {
-            opacity: 0.9;
-        }
+        .btn-school:hover { opacity: 0.9; }
+        .btn-school:active { transform: translateY(3px); box-shadow: 0 0 0 var(--ui-wood); }
         
-        .btn-school:active { 
-            transform: translateY(3px); 
-            box-shadow: 0 0 0 var(--ui-wood); 
-        }
-        
-        .btn-main-action { 
-            background: #3498db; 
-            color: white; 
-            border-color: #2980b9; 
-            box-shadow: 0 3px 0 #2980b9, 0 4px 8px rgba(0,0,0,0.2); 
-        }
+        .btn-main-action { background: #3498db; color: white; border-color: #2980b9; box-shadow: 0 3px 0 #2980b9, 0 4px 8px rgba(0,0,0,0.2); }
 
-        .chalk-icon {
-            width: 14px; height: 14px; background: #fff;
-            border-radius: 2px; display: inline-block; border: 1px solid #ccc;
-        }
+        .chalk-icon { width: 14px; height: 14px; background: #fff; border-radius: 2px; display: inline-block; border: 1px solid #ccc; }
 
         .classroom-grid { 
             display: grid; gap: 15px; padding: 15px; align-items: center; 
             background: rgba(255,255,255,0.05); border-radius: 15px; 
             border: 2px dashed rgba(255,255,255,0.2); 
+        }
+
+        /* Wadah grid di bawah kelas untuk POV Guru */
+        .teacher-desk-bottom {
+            display: none;
+            gap: 15px;
+            padding: 0 15px;
+            width: 100%;
+            margin-top: 15px;
+        }
+        .teacher-desk-bottom.show {
+            display: grid;
         }
 
         .seat {
@@ -142,32 +148,19 @@
         
         .char-img-container {
             width: 100%; height: 72%; overflow: hidden; position: relative;
-            background-color: rgba(255,255,255,0.5);
-            border-bottom: 2px solid rgba(0,0,0,0.1);
+            background-color: rgba(255,255,255,0.5); border-bottom: 2px solid rgba(0,0,0,0.1);
         }
-        
-        .char-img {
-            width: 100%; height: 100%; object-fit: cover;
-            transition: 0.3s;
-        }
+        .char-img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s; }
         .seat:hover .char-img { transform: scale(1.05); }
 
-        .char-info {
-            width: 100%; height: 28%;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            padding: 2px 5px; position: relative;
-            color: #000;
-        }
+        .char-info { width: 100%; height: 28%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2px 5px; position: relative; color: #000; }
 
         .seat.is-locked .char-img { filter: grayscale(1) contrast(0.8); opacity: 0.5; }
         .seat.is-locked { border-color: #c0392b !important; }
         
         .lock-box, .hide-desk-btn, .gender-btn {
-            position: absolute; width: 28px; height: 28px;
-            background: var(--ui-paper); border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; z-index: 20; transition: 0.2s; border: 2px solid;
-            color: var(--text-dark); font-size: 14px;
+            position: absolute; width: 28px; height: 28px; background: var(--ui-paper); border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; z-index: 20; transition: 0.2s; border: 2px solid; color: var(--text-dark); font-size: 14px;
         }
         
         .lock-box { top: 5px; right: 5px; border-color: var(--desk-border); }
@@ -179,260 +172,72 @@
         .gender-btn { top: 38px; left: 5px; border-color: #2ecc71; color: #2ecc71; font-size: 14px; }
         .gender-btn:hover { background: #2ecc71; color: #fff; }
 
-        .seat.is-disabled {
-            background: rgba(0,0,0,0.15); border: 2px dashed rgba(255,255,255,0.3);
-            box-shadow: none; cursor: pointer; justify-content: center; align-items: center;
-        }
+        .seat.is-disabled { background: rgba(0,0,0,0.15); border: 2px dashed rgba(255,255,255,0.3); box-shadow: none; cursor: pointer; justify-content: center; align-items: center; }
         .seat.is-disabled:hover { background: rgba(255,255,255,0.1); transform: none; }
         .seat.is-disabled * { display: none; }
-        .seat.is-disabled::after {
-            content: "+ Buka Meja"; color: rgba(255,255,255,0.6);
-            font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: bold;
-        }
+        .seat.is-disabled::after { content: "+ Buka Meja"; color: rgba(255,255,255,0.6); font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: bold; }
 
-        .seat-name { 
-            font-weight: 700; text-align: center; width: 100%; line-height: 1.2; 
-            text-transform: uppercase; color: #000 !important;
-            margin-bottom: 0; z-index: 2; font-family: 'Poppins', sans-serif;
-        }
-        .text-normal { font-size: 12px; } 
-        .text-medium { font-size: 10px; } 
-        .text-small { font-size: 9px; } 
-        .text-tiny { font-size: 8px; }
+        .seat-name { font-weight: 700; text-align: center; width: 100%; line-height: 1.2; text-transform: uppercase; color: #000 !important; margin-bottom: 0; z-index: 2; font-family: 'Poppins', sans-serif; }
+        .text-normal { font-size: 12px; } .text-medium { font-size: 10px; } .text-small { font-size: 9px; } .text-tiny { font-size: 8px; }
+        .seat-number { position: absolute; bottom: 2px; right: 4px; font-size: 9px; color: rgba(0,0,0,0.4); font-weight: bold; }
 
-        .seat-number { 
-            position: absolute; bottom: 2px; right: 4px; 
-            font-size: 9px; color: rgba(0,0,0,0.4); font-weight: bold;
+        /* --- POV & THEME TOGGLES --- */
+        .pov-toggle {
+            position: fixed; top: 20px; left: 20px; z-index: 50; background: var(--ui-paper); color: var(--text-dark); border: 2px solid var(--ui-wood); border-radius: 20px; padding: 0 15px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; font-weight: bold; font-family: 'Poppins', sans-serif; transition: 0.3s; box-shadow: 0 4px 8px rgba(0,0,0,0.2); user-select: none;
         }
+        .pov-toggle:hover { transform: scale(1.05); }
+
+        .theme-toggle {
+            position: fixed; top: 20px; right: 20px; z-index: 50; background: var(--ui-paper); border: 2px solid var(--ui-wood); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; transition: 0.3s;
+        }
+        .theme-toggle:hover { transform: rotate(20deg); }
 
         /* --- MODAL --- */
-        .modal { 
-            display: none; 
-            position: fixed; 
-            z-index: 999; 
-            left: 0; 
-            top: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: rgba(0, 0, 0, 0.6); 
-            backdrop-filter: blur(3px);
-            overflow-y: auto;
-        }
-        
+        .modal { display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(3px); overflow-y: auto; }
         .modal.show { display: block; }
-        
-        .modal-content { 
-            background: var(--ui-paper); 
-            color: var(--text-dark);
-            margin: 5% auto; 
-            padding: 25px; 
-            width: 90%; 
-            max-width: 550px; 
-            border-radius: 12px; 
-            height: 80vh; 
-            max-height: 80vh; 
-            display: flex; 
-            flex-direction: column; 
-            box-shadow: 0 0 0 4px rgba(255,255,255,0.5), 0 15px 40px rgba(0,0,0,0.5);
-            position: relative; 
-            border: 3px solid var(--ui-wood);
-        }
-        
-        .modal-header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 15px; 
-            border-bottom: 2px dashed rgba(0,0,0,0.1); 
-            padding-bottom: 10px; 
-        }
-        
-        .modal-title { 
-            margin: 0; 
-            font-family: 'Poppins', sans-serif; 
-            color: var(--ui-wood); 
-            font-size: 22px; 
-            font-weight: 700; 
-        }
-        
-        .close-btn { 
-            width: 30px; 
-            height: 30px; 
-            background: #eee; 
-            border-radius: 50%; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-weight: bold; 
-            cursor: pointer; 
-            color: #555; 
-            transition: 0.2s; 
-            border: none;
-        }
+        .modal-content { background: var(--ui-paper); color: var(--text-dark); margin: 5% auto; padding: 25px; width: 90%; max-width: 550px; border-radius: 12px; height: 80vh; max-height: 80vh; display: flex; flex-direction: column; box-shadow: 0 0 0 4px rgba(255,255,255,0.5), 0 15px 40px rgba(0,0,0,0.5); position: relative; border: 3px solid var(--ui-wood); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px dashed rgba(0,0,0,0.1); padding-bottom: 10px; }
+        .modal-title { margin: 0; font-family: 'Poppins', sans-serif; color: var(--ui-wood); font-size: 22px; font-weight: 700; }
+        .close-btn { width: 30px; height: 30px; background: #eee; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; color: #555; transition: 0.2s; border: none;}
         .close-btn:hover { background: #c0392b; color: #fff; }
-        
-        .manager-input { 
-            width: 100%; 
-            padding: 12px; 
-            border: 2px solid #ddd; 
-            background: #fff; 
-            border-radius: 10px; 
-            font-family: inherit; 
-            font-weight: bold; 
-            color: var(--text-dark); 
-            margin-bottom: 10px;
-        }
+        .manager-input { width: 100%; padding: 12px; border: 2px solid #ddd; background: #fff; border-radius: 10px; font-family: inherit; font-weight: bold; color: var(--text-dark); margin-bottom: 10px;}
         .manager-input:focus { outline: none; border-color: var(--ui-wood); }
-        
-        .name-list { 
-            flex: 1 1 auto; 
-            min-height: 0; 
-            overflow-y: auto; 
-            background: rgba(0,0,0,0.03); 
-            padding: 10px; 
-            border-radius: 8px; 
-            margin: 10px 0; 
-            border: 1px solid rgba(0,0,0,0.1);
-        }
-        
-        .name-item { 
-            padding: 10px 15px; 
-            margin-bottom: 8px; 
-            border-radius: 8px; 
-            background: #fff; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
-            transition: 0.1s;
-            color: var(--text-dark); 
-            font-weight: 700; 
-            border: 1px solid #eee;
-        }
+        .name-list { flex: 1 1 auto; min-height: 0; overflow-y: auto; background: rgba(0,0,0,0.03); padding: 10px; border-radius: 8px; margin: 10px 0; border: 1px solid rgba(0,0,0,0.1);}
+        .name-item { padding: 10px 15px; margin-bottom: 8px; border-radius: 8px; background: #fff; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: 0.1s; color: var(--text-dark); font-weight: 700; border: 1px solid #eee;}
         .name-item:hover { transform: translateX(3px); border-left: 4px solid var(--ui-wood); }
         .name-item.eliminated span { opacity: 0.5; text-decoration: line-through; color: #c0392b; }
-        
-        .action-btn { 
-            width: 28px; 
-            height: 28px; 
-            border-radius: 8px; 
-            border: none; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            margin-left: 5px; 
-            font-size: 12px; 
-            transition: 0.2s;
-        }
+        .action-btn { width: 28px; height: 28px; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-left: 5px; font-size: 12px; transition: 0.2s;}
         .action-btn:active { transform: translateY(2px); }
-        
         .btn-status-on { background: #abebc6; color: #27ae60; width: auto; padding: 0 10px; }
         .btn-status-off { background: #fadbd8; color: #c0392b; width: auto; padding: 0 10px; }
         .btn-edit { background: #d4e4ff; color: #2980b9; } 
         .btn-del { background: #fadbd8; color: #c0392b; }
+        textarea.manager-input { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 15px; border-radius: 8px; border: 2px solid #ddd; font-family: monospace; color: var(--text-dark); background: #fff; resize: none; margin-bottom: 15px;}
+        .modal-footer { display: grid; grid-template-columns: 1fr 1fr; gap: 10px;}
         
-        textarea.manager-input { 
-            flex: 1 1 auto; 
-            min-height: 0; 
-            overflow-y: auto; 
-            padding: 15px; 
-            border-radius: 8px; 
-            border: 2px solid #ddd; 
-            font-family: monospace; 
-            color: var(--text-dark); 
-            background: #fff; 
-            resize: none;
-            margin-bottom: 15px;
-        }
-        textarea.manager-input:focus { outline: none; border-color: var(--ui-wood); }
-
-        .modal-footer { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 10px;
-        }
-
-        /* --- TOAST --- */
-        .toast {
-            position: fixed; 
-            bottom: 20px; 
-            right: 20px; 
-            z-index: 2000;
-            background: #2c3e50; 
-            color: #fff; 
-            padding: 15px 20px;
-            border-radius: 8px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            animation: slideIn 0.3s ease;
-            max-width: 300px;
-        }
-
+        /* --- TOAST & STATS --- */
+        .toast { position: fixed; bottom: 20px; right: 20px; z-index: 2000; background: #2c3e50; color: #fff; padding: 15px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); animation: slideIn 0.3s ease; max-width: 300px;}
         .toast.success { background: #27ae60; }
         .toast.error { background: #c0392b; }
         .toast.info { background: #3498db; }
+        @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-        @keyframes slideIn {
-            from { transform: translateX(400px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        /* --- STATS PANEL --- */
-        .stats-panel {
-            display: none; 
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px; 
-            margin-bottom: 20px; 
-            padding: 15px;
-            background: rgba(255,255,255,0.1); 
-            border-radius: 12px;
-            position: relative;
-        }
-
-        .stat-card {
-            background: var(--ui-paper); 
-            padding: 15px; 
-            border-radius: 8px;
-            text-align: center; 
-            border-left: 4px solid var(--ui-wood);
-        }
-
-        .stat-value { 
-            font-size: 24px; 
-            font-weight: 700; 
-            color: var(--ui-wood); 
-        }
-        .stat-label { 
-            font-size: 12px; 
-            color: #7f8c8d; 
-            margin-top: 5px; 
-        }
-
-        /* --- THEME TOGGLE --- */
-        .theme-toggle {
-            position: fixed; 
-            top: 20px; 
-            right: 20px; 
-            z-index: 50;
-            background: var(--ui-paper); 
-            border: 2px solid var(--ui-wood);
-            border-radius: 50%; 
-            width: 40px; 
-            height: 40px;
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-            cursor: pointer; 
-            font-size: 20px; 
-            transition: 0.3s;
-        }
-
-        .theme-toggle:hover { transform: rotate(20deg); }
+        .stats-panel { display: none; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 12px; position: relative;}
+        .stat-card { background: var(--ui-paper); padding: 15px; border-radius: 8px; text-align: center; border-left: 4px solid var(--ui-wood);}
+        .stat-value { font-size: 24px; font-weight: 700; color: var(--ui-wood); }
+        .stat-label { font-size: 12px; color: #7f8c8d; margin-top: 5px; }
 
         @media (max-width: 768px) {
-            .header-section { flex-direction: column; align-items: center; padding-left: 0; gap: 10px; }
+            .pov-toggle { top: 10px; left: 10px; font-size: 12px; height: 35px; padding: 0 10px; }
+            .theme-toggle { top: 10px; right: 10px; width: 35px; height: 35px; }
+            .header-section { flex-direction: column; align-items: center; padding-left: 0; gap: 10px; margin-top: 35px; }
             .controls { justify-content: center; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
             .classroom-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px; padding: 8px; }
+            
+            /* Pada mobile (2 kolom), Meja Guru di-span full aja biar pas */
+            .teacher-desk-bottom { grid-template-columns: repeat(2, 1fr) !important; padding: 0 8px; gap: 8px;}
+            .teacher-desk.pov-guru-mode { grid-column: 1 / -1; }
+            
             .seat { min-height: 85px; flex-direction: row; justify-content: space-between; }
             .char-img-container { width: 70px; height: 100%; border-right: 2px solid var(--desk-border); }
             .char-info { width: calc(100% - 70px); }
@@ -440,18 +245,19 @@
         }
 
         @media print {
-            .controls, .modal, .lock-box, .gender-btn, .hide-desk-btn, .theme-toggle, .stats-panel { display: none !important; }
+            .controls, .modal, .lock-box, .gender-btn, .hide-desk-btn, .theme-toggle, .pov-toggle, .stats-panel { display: none !important; }
             body { background: white; }
         }
     </style>
 </head>
 <body>
 
+<div class="pov-toggle" onclick="togglePOV()" title="Ubah ke POV Guru">👨‍🏫 POV Guru</div>
 <div class="theme-toggle" onclick="toggleDarkMode()" title="Dark/Light Mode">🌙</div>
 
 <div class="container">
-    <div class="header-section">
-        <div class="teacher-desk">
+    <div class="header-section" id="topHeader">
+        <div class="teacher-desk" id="teacherDeskObj">
             MEJA GURU
         </div>
         <div class="controls">
@@ -476,6 +282,8 @@
     <div id="statsPanel" class="stats-panel"></div>
 
     <div id="classroom" class="classroom-grid"></div>
+    
+    <div id="teacherDeskContainerBottom" class="teacher-desk-bottom"></div>
 </div>
 
 <div id="mainModal" class="modal">
@@ -544,7 +352,7 @@
 <script>
     // === DATA ===
     const knownGenders = {
-        "RAHMA": "F", "TASYA": "F", "ELQONI": "M",
+        "RAHMA": "F", "TASYA": "F", "AKHSIN AMIRULLOH": "M",
         "ZERLINA": "F", "YEHEZKIEL RAMLAN": "M", "MAYANG": "F",
         "NATASHA": "F", "GALIH": "M", "MURSID": "M",
         "IFA": "F", "KRIS": "M", "HARIS": "M",
@@ -559,9 +367,9 @@
     let totalCols = 6;
     let historyData = [];
     let historyIndex = -1;
-    let modalHistory = []; // Untuk tracking navigasi Back/Esc Android
+    let modalHistory = [];
+    let isTeacherPOV = false; 
 
-    // === SISTEM NAVIGASI BARU (ANDROID/BACK SUPPORT) ===
     function showView(viewId, title) {
         document.getElementById('normalView').style.display = 'none';
         document.getElementById('bulkView').style.display = 'none';
@@ -579,71 +387,45 @@
 
     function pushView(viewId, title) {
         modalHistory.push({ id: viewId, title: title });
-        history.pushState({ modal: viewId }, ''); // Melempar state ke browser/Android
+        history.pushState({ modal: viewId }, '');
         showView(viewId, title);
     }
 
-    function handleBack() {
-        history.back(); // Otomatis trigger listener popstate
-    }
+    function handleBack() { history.back(); }
 
     window.addEventListener('popstate', (e) => {
-        modalHistory.pop(); // Hapus tampilan yang barusan ditutup
+        modalHistory.pop();
         if (modalHistory.length > 0) {
             const prev = modalHistory[modalHistory.length - 1];
-            showView(prev.id, prev.title); // Tampilkan yang sebelumnya
+            showView(prev.id, prev.title);
         } else {
-            showView(null); // Jika habis, tutup modal sepenuhnya
+            showView(null);
         }
     });
 
-    // === MODAL HANDLERS ===
     function handleOpenManager() {
-        modalHistory = [];
-        pushView('normalView', 'BUKU ABSEN SISWA');
-        renderNameList();
+        modalHistory = []; pushView('normalView', 'BUKU ABSEN SISWA'); renderNameList();
     }
-
     function handleOpenSettings() {
-        modalHistory = [];
-        pushView('settingsView', '⚙️ PENGATURAN KELAS');
+        modalHistory = []; pushView('settingsView', '⚙️ PENGATURAN KELAS');
         document.getElementById('inputRows').value = totalRows;
         document.getElementById('inputCols').value = totalCols;
     }
-
     function handleOpenBulk() {
         pushView('bulkView', '📝 INPUT BANYAK');
         document.getElementById('bulkEditArea').value = masterNames.map(n => n.name).join('\n');
     }
-
-    function handleOpenSort() {
-        pushView('sortView', '↕️ URUTKAN DATA');
-    }
-
+    function handleOpenSort() { pushView('sortView', '↕️ URUTKAN DATA'); }
     function handleCloseModal() {
-        if(modalHistory.length > 0) {
-            history.go(-modalHistory.length); // Bersihkan seluruh jejak history view saat tombol X ditekan
-            modalHistory = [];
-        } else {
-            showView(null);
-        }
+        if(modalHistory.length > 0) { history.go(-modalHistory.length); modalHistory = []; } 
+        else { showView(null); }
     }
 
-    // === ACTION HANDLERS ===
-    function handleShuffle() {
-        distributeNames();
-        saveToHistory();
-        renderSeats();
-        saveState();
-        showToast('Posisi diacak ✓', 'success');
-    }
+    function handleShuffle() { distributeNames(); saveToHistory(); renderSeats(); saveState(); showToast('Posisi diacak ✓', 'success'); }
 
     function handleShowStats() {
         const panel = document.getElementById('statsPanel');
-        if (panel.style.display === 'grid') {
-            panel.style.display = 'none';
-            return;
-        }
+        if (panel.style.display === 'grid') { panel.style.display = 'none'; return; }
         
         const present = masterNames.filter(n => n.active).length;
         const absent = masterNames.length - present;
@@ -660,9 +442,7 @@
         panel.style.display = 'grid';
     }
 
-    function handlePrint() {
-        window.print();
-    }
+    function handlePrint() { window.print(); }
 
     function handleAddName() {
         const val = document.getElementById('newNameInput').value.trim().toUpperCase();
@@ -670,11 +450,7 @@
         if (val && masterNames.length < maxS) {
             masterNames.push({ name: val, active: true });
             document.getElementById('newNameInput').value = '';
-            renderNameList();
-            distributeNames();
-            saveToHistory();
-            renderSeats();
-            saveState();
+            renderNameList(); distributeNames(); saveToHistory(); renderSeats(); saveState();
             showToast(`${val} ditambahkan ✓`, 'success');
         }
     }
@@ -682,39 +458,24 @@
     function handleSaveBulk() {
         const lines = document.getElementById('bulkEditArea').value.split('\n').map(s => s.trim().toUpperCase()).filter(s => s);
         const maxS = getActiveSeatCount();
-        if (lines.length > maxS) {
-            showToast(`Max ${maxS} siswa!`, 'error');
-            return;
-        }
+        if (lines.length > maxS) { showToast(`Max ${maxS} siswa!`, 'error'); return; }
         masterNames = lines.map(n => ({ name: n, active: true }));
         seats.forEach(s => { s.currentName = ""; s.locked = false; delete s.manualGender; });
-        distributeNames();
-        saveToHistory();
-        renderSeats();
-        saveState();
-        handleCloseModal();
+        distributeNames(); saveToHistory(); renderSeats(); saveState(); handleCloseModal();
         showToast('Data disimpan ✓', 'success');
     }
 
     function handleSort(type) {
         if (type === 'alpha') masterNames.sort((a, b) => a.name.localeCompare(b.name));
         else masterNames.sort((a, b) => b.active - a.active);
-        distributeNames();
-        saveToHistory();
-        renderSeats();
-        saveState();
-        showToast('Data diurutkan ✓', 'success');
+        distributeNames(); saveToHistory(); renderSeats(); saveState(); showToast('Data diurutkan ✓', 'success');
     }
 
     function handleApplyGrid() {
         const r = parseInt(document.getElementById('inputRows').value);
         const c = parseInt(document.getElementById('inputCols').value);
         if (r > 0 && c > 0) {
-            totalRows = r;
-            totalCols = c;
-            initSeats();
-            saveState();
-            handleCloseModal();
+            totalRows = r; totalCols = c; initSeats(); saveState(); handleCloseModal();
             showToast('Grid disimpan ✓', 'success');
         }
     }
@@ -722,125 +483,81 @@
     function handleEliminateAll() {
         if (confirm("Tandai semua ABSEN?")) {
             masterNames.forEach(n => n.active = false);
-            renderNameList();
-            distributeNames();
-            saveToHistory();
-            renderSeats();
-            saveState();
-            showToast('Semua ABSEN', 'info');
+            renderNameList(); distributeNames(); saveToHistory(); renderSeats(); saveState(); showToast('Semua ABSEN', 'info');
         }
     }
 
     function handleRestoreAll() {
         masterNames.forEach(n => n.active = true);
-        renderNameList();
-        distributeNames();
-        saveToHistory();
-        renderSeats();
-        saveState();
-        showToast('Semua HADIR', 'info');
+        renderNameList(); distributeNames(); saveToHistory(); renderSeats(); saveState(); showToast('Semua HADIR', 'info');
     }
 
     function handleResetDefault() {
         if (confirm("Reset ke data awal?")) {
             masterNames = defaultNames.map(n => ({ name: n, active: true }));
-            renderNameList();
-            seats.forEach(s => { s.currentName = ""; s.locked = false; delete s.manualGender; });
-            distributeNames();
-            saveToHistory();
-            renderSeats();
-            saveState();
-            showToast('Data direset ✓', 'info');
+            renderNameList(); seats.forEach(s => { s.currentName = ""; s.locked = false; delete s.manualGender; });
+            distributeNames(); saveToHistory(); renderSeats(); saveState(); showToast('Data direset ✓', 'info');
         }
     }
 
-    // === JSON HANDLERS ===
     function handleSaveJSON() {
         const data = { masterNames, seats, totalRows, totalCols, date: new Date().toLocaleString() };
         const json = JSON.stringify(data, null, 2);
         const blob = new Blob([json], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `denah_${new Date().toISOString().split('T')[0]}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
-        showToast('✅ JSON berhasil disave!', 'success');
+        const a = document.createElement('a'); a.href = url; a.download = `denah_${new Date().toISOString().split('T')[0]}.json`;
+        a.click(); URL.revokeObjectURL(url); showToast('✅ JSON berhasil disave!', 'success');
     }
 
-    function handleLoadJSON() {
-        document.getElementById('fileInput').click();
-    }
+    function handleLoadJSON() { document.getElementById('fileInput').click(); }
 
     function loadJSONFile(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        
+        const file = event.target.files[0]; if (!file) return;
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
                 const data = JSON.parse(e.target.result);
                 if (confirm('⚠️ Load data ini?\n\nData lama akan diganti!')) {
-                    masterNames = data.masterNames || [];
-                    seats = data.seats || [];
-                    totalRows = data.totalRows || 3;
-                    totalCols = data.totalCols || 6;
-                    document.getElementById('classroom').style.gridTemplateColumns = `repeat(${totalCols}, 1fr)`;
-                    saveState();
-                    renderSeats();
-                    handleCloseModal();
+                    masterNames = data.masterNames || []; seats = data.seats || [];
+                    totalRows = data.totalRows || 3; totalCols = data.totalCols || 6;
+                    saveState(); renderSeats(); handleCloseModal();
                     showToast('✅ JSON berhasil diload!', 'success');
                 }
-            } catch (e) {
-                showToast('❌ File tidak valid!', 'error');
-            }
+            } catch (e) { showToast('❌ File tidak valid!', 'error'); }
         };
-        reader.readAsText(file);
-        event.target.value = '';
+        reader.readAsText(file); event.target.value = '';
     }
 
-    // === UTILITY FUNCTIONS ===
     function showToast(msg, type = 'info') {
-        const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
-        toast.textContent = msg;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
+        const toast = document.createElement('div'); toast.className = `toast ${type}`; toast.textContent = msg;
+        document.body.appendChild(toast); setTimeout(() => toast.remove(), 3000);
     }
 
     function loadData() {
         const saved = localStorage.getItem('gacha_class_fixed');
         if (saved) {
             const data = JSON.parse(saved);
-            masterNames = data.masterNames || [];
-            seats = data.seats || [];
-            totalRows = data.totalRows || 3;
-            totalCols = data.totalCols || 6;
+            masterNames = data.masterNames || []; seats = data.seats || [];
+            totalRows = data.totalRows || 3; totalCols = data.totalCols || 6;
             return true;
         }
         return false;
     }
 
-    function saveState() {
-        localStorage.setItem('gacha_class_fixed', JSON.stringify({ masterNames, seats, totalRows, totalCols }));
-    }
+    function saveState() { localStorage.setItem('gacha_class_fixed', JSON.stringify({ masterNames, seats, totalRows, totalCols })); }
 
     function saveToHistory() {
         historyData = historyData.slice(0, historyIndex + 1);
-        historyData.push(JSON.stringify({ masterNames, seats }));
-        historyIndex++;
+        historyData.push(JSON.stringify({ masterNames, seats })); historyIndex++;
     }
 
-    function getActiveSeatCount() {
-        return seats.filter(s => !s.disabled).length;
-    }
+    function getActiveSeatCount() { return seats.filter(s => !s.disabled).length; }
 
     function detectGender(name) {
         if (knownGenders[name]) return knownGenders[name];
         const n = name.toUpperCase();
         const femaleWords = ["PUTRI", "AYU", "NUR", "SITI", "INTAN", "SARI"];
         const maleWords = ["PUTRA", "AKBAR", "FAHMI", "ILHAM", "BUDI", "JOKO"];
-        
         for (let w of n.split(" ")) {
             if (femaleWords.some(fw => w === fw)) return "F";
             if (maleWords.some(mw => w === mw)) return "M";
@@ -856,12 +573,10 @@
     }
 
     window.toggleGender = function(idx) {
-        const seat = seats[idx];
-        if (!seat.currentName) return;
+        const seat = seats[idx]; if (!seat.currentName) return;
         const currentGender = seat.manualGender || detectGender(seat.currentName);
         seat.manualGender = currentGender === 'M' ? 'F' : 'M';
-        renderSeats();
-        saveState();
+        renderSeats(); saveState();
     };
 
     function toggleDarkMode() {
@@ -872,14 +587,39 @@
         document.querySelector('.theme-toggle').textContent = newTheme === 'dark' ? '☀️' : '🌙';
     }
 
-    // === RENDER FUNCTIONS ===
-    function initSeats() {
-        seats = [];
-        const maxS = totalRows * totalCols;
-        document.getElementById('classroom').style.gridTemplateColumns = `repeat(${totalCols}, 1fr)`;
-        for (let i = 0; i < maxS; i++) seats.push({ id: i, currentName: "", locked: false, disabled: false });
-        distributeNames();
+    function togglePOV() {
+        isTeacherPOV = !isTeacherPOV;
+        
+        const btn = document.querySelector('.pov-toggle');
+        const desk = document.getElementById('teacherDeskObj');
+        const topHeader = document.getElementById('topHeader');
+        const bottomContainer = document.getElementById('teacherDeskContainerBottom');
+
+        if (isTeacherPOV) {
+            btn.innerHTML = '🧑‍🎓 POV Murid';
+            btn.style.background = '#3498db'; btn.style.color = '#fff'; btn.style.borderColor = '#2980b9'; btn.title = 'Ubah ke POV Murid';
+            
+            desk.classList.add('pov-guru-mode');
+            bottomContainer.appendChild(desk);
+            bottomContainer.classList.add('show');
+            showToast('Mode POV Guru Aktif 👨‍🏫', 'info');
+        } else {
+            btn.innerHTML = '👨‍🏫 POV Guru';
+            btn.style.background = 'var(--ui-paper)'; btn.style.color = 'var(--text-dark)'; btn.style.borderColor = 'var(--ui-wood)'; btn.title = 'Ubah ke POV Guru';
+            
+            desk.classList.remove('pov-guru-mode');
+            topHeader.insertBefore(desk, topHeader.firstChild);
+            bottomContainer.classList.remove('show');
+            showToast('Mode POV Murid Aktif 🧑‍🎓', 'info');
+        }
+
         renderSeats();
+    }
+
+    function initSeats() {
+        seats = []; const maxS = totalRows * totalCols;
+        for (let i = 0; i < maxS; i++) seats.push({ id: i, currentName: "", locked: false, disabled: false });
+        distributeNames(); renderSeats();
     }
 
     function distributeNames() {
@@ -892,9 +632,7 @@
         seats.forEach(seat => { 
             if (!seat.locked && !seat.disabled) {
                 const newName = available.shift() || "";
-                if (seat.currentName !== newName) {
-                    delete seat.manualGender; // Reset settingan manual jika penghuni mejanya ganti
-                }
+                if (seat.currentName !== newName) delete seat.manualGender;
                 seat.currentName = newName;
             } 
         });
@@ -902,17 +640,28 @@
 
     function renderSeats() {
         const container = document.getElementById('classroom');
+        const bottomContainer = document.getElementById('teacherDeskContainerBottom');
+        
+        // Memastikan jumlah kolom CSS sinkron dengan jumlah kolom di pengaturan
+        container.style.gridTemplateColumns = `repeat(${totalCols}, 1fr)`;
+        bottomContainer.style.gridTemplateColumns = `repeat(${totalCols}, 1fr)`;
+        
         container.innerHTML = '';
-        for (let row = 0; row < totalRows; row++) {
-            for (let col = 0; col < totalCols; col++) {
-                const idx = row * totalCols + col;
+        for (let visualRow = 0; visualRow < totalRows; visualRow++) {
+            for (let visualCol = 0; visualCol < totalCols; visualCol++) {
+                
+                let actualRow = isTeacherPOV ? (totalRows - 1 - visualRow) : visualRow;
+                let actualCol = isTeacherPOV ? (totalCols - 1 - visualCol) : visualCol;
+                const idx = actualRow * totalCols + actualCol;
+                
                 const seat = seats[idx];
                 const div = document.createElement('div');
+                const rowClass = `seat-row-${actualRow % 3}`; 
+                
                 if (seat.disabled) {
                     div.className = 'seat is-disabled';
                     div.onclick = () => { seat.disabled = false; distributeNames(); renderSeats(); saveState(); };
                 } else {
-                    const rowClass = `seat-row-${row % 3}`;
                     div.className = `seat ${rowClass} ${seat.locked ? 'is-locked' : ''}`;
                     const name = seat.currentName;
                     const avatar = getAvatarUrl(name, seat.manualGender);
@@ -932,7 +681,7 @@
                         
                         <div class="char-img-container"><img src="${avatar}" class="char-img" alt="${name}" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=85c1e9&color=fff'"></div>
                         <div class="char-info"><div class="seat-name ${fontSize}">${name || "KOSONG"}</div></div>
-                        <div class="seat-number">MEJA ${col + 1}</div>
+                        <div class="seat-number">MEJA ${actualCol + 1}</div>
                     `;
                 }
                 container.appendChild(div);
@@ -959,10 +708,7 @@
 
     window.addEventListener('load', () => {
         if (!loadData()) initSeats();
-        else {
-            document.getElementById('classroom').style.gridTemplateColumns = `repeat(${totalCols}, 1fr)`;
-            renderSeats();
-        }
+        else renderSeats();
         const theme = localStorage.getItem('theme');
         if (theme === 'dark') {
             document.documentElement.setAttribute('data-theme', 'dark');
@@ -970,21 +716,10 @@
         }
     });
 
-    // Keyboard shortcuts & Navigation Key Support
     document.addEventListener('keydown', (e) => {
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-        
-        if (e.ctrlKey && e.key === 'a') { 
-            e.preventDefault(); 
-            handleShuffle(); 
-        }
-
-        // Dukungan ESC untuk kembali ke menu sebelumnya
-        if (e.key === 'Escape') {
-            if (document.getElementById('mainModal').classList.contains('show')) {
-                handleBack();
-            }
-        }
+        if (e.ctrlKey && e.key === 'a') { e.preventDefault(); handleShuffle(); }
+        if (e.key === 'Escape') { if (document.getElementById('mainModal').classList.contains('show')) handleBack(); }
     });
 
 </script>
