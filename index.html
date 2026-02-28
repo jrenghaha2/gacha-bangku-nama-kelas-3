@@ -64,11 +64,8 @@
             text-align: center; border: 3px solid #6d4128; border-radius: 8px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.3); 
             flex-shrink: 0; position: relative;
-            font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 20px; letter-spacing: 1px;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
             transition: transform 0.3s ease, width 0.3s ease;
         }
-        .teacher-desk::before { content: "🏫 ABSENSI KELAS"; font-size: 10px; opacity: 0.9; letter-spacing: 1px; margin-bottom: 2px; font-family: 'Quicksand', sans-serif; color: #f0f0f0;}
 
         .teacher-desk.pov-guru-mode { width: 100%; margin: 0; }
 
@@ -124,17 +121,19 @@
         .seat.is-disabled { background: rgba(0,0,0,0.15); border: 2px dashed rgba(255,255,255,0.3); box-shadow: none; cursor: pointer; justify-content: center; align-items: center; }
         .seat.is-disabled:hover { background: rgba(255,255,255,0.1); transform: none; }
         .seat.is-disabled * { display: none; }
-        .seat.is-disabled::after { content: "+ Buka Meja"; color: rgba(255,255,255,0.6); font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: bold; }
+        .seat.is-disabled::after { content: attr(data-label); color: rgba(255,255,255,0.6); font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: bold; }
 
         .seat-name { font-weight: 700; text-align: center; width: 100%; line-height: 1.2; text-transform: uppercase; color: #000 !important; margin-bottom: 0; z-index: 2; font-family: 'Poppins', sans-serif; }
         .text-normal { font-size: 12px; } .text-medium { font-size: 10px; } .text-small { font-size: 9px; } .text-tiny { font-size: 8px; }
         .seat-number { position: absolute; bottom: 2px; right: 4px; font-size: 9px; color: rgba(0,0,0,0.4); font-weight: bold; }
 
-        /* --- POV & THEME TOGGLES --- */
+        /* --- POV, THEME, LANG TOGGLES --- */
         .pov-toggle { position: fixed; top: 20px; left: 20px; z-index: 50; background: var(--ui-paper); color: var(--text-dark); border: 2px solid var(--ui-wood); border-radius: 20px; padding: 0 15px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; font-weight: bold; font-family: 'Poppins', sans-serif; transition: 0.3s; box-shadow: 0 4px 8px rgba(0,0,0,0.2); user-select: none; }
         .pov-toggle:hover { transform: scale(1.05); }
         .theme-toggle { position: fixed; top: 20px; right: 20px; z-index: 50; background: var(--ui-paper); border: 2px solid var(--ui-wood); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; transition: 0.3s; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
         .theme-toggle:hover { transform: rotate(20deg); }
+        .lang-toggle { position: fixed; top: 20px; right: 70px; z-index: 50; background: var(--ui-paper); color: var(--text-dark); border: 2px solid var(--ui-wood); border-radius: 20px; padding: 0 12px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; font-weight: bold; font-family: 'Poppins', sans-serif; transition: 0.3s; box-shadow: 0 4px 8px rgba(0,0,0,0.2); user-select: none; }
+        .lang-toggle:hover { transform: scale(1.05); }
 
         /* --- MODAL & SETTINGS --- */
         .modal { display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(3px); overflow-y: auto; }
@@ -198,6 +197,7 @@
         @media (max-width: 768px) {
             .pov-toggle { top: 10px; left: 10px; font-size: 12px; height: 35px; padding: 0 10px; }
             .theme-toggle { top: 10px; right: 10px; width: 35px; height: 35px; }
+            .lang-toggle { top: 10px; right: 55px; height: 35px; font-size: 12px; }
             .header-section { flex-direction: column; align-items: center; padding-left: 0; gap: 10px; margin-top: 35px; }
             .controls { justify-content: center; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
             .classroom-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px; padding: 8px; }
@@ -214,7 +214,7 @@
         }
 
         @media print {
-            .controls, .modal, .lock-box, .gender-btn, .hide-desk-btn, .theme-toggle, .pov-toggle, .stats-panel { display: none !important; }
+            .controls, .modal, .lock-box, .gender-btn, .hide-desk-btn, .theme-toggle, .pov-toggle, .lang-toggle, .stats-panel { display: none !important; }
             body { background: white !important; background-image: none !important; }
             .teacher-desk.pov-guru-mode { margin-top: 20px; }
         }
@@ -222,32 +222,34 @@
 </head>
 <body>
 
-<div class="pov-toggle" onclick="togglePOV()" title="Ubah ke POV Guru">👨‍🏫 POV Guru</div>
+<div class="pov-toggle" id="btnPovToggle" onclick="togglePOV()">👨‍🏫 POV Guru</div>
+<div class="lang-toggle" id="btnLangToggle" onclick="toggleLang()" title="Ubah Bahasa / Change Language">🇮🇩 ID</div>
 <div class="theme-toggle" onclick="toggleDarkMode()" title="Dark/Light Mode">🌙</div>
 
 <div class="container">
     <div class="header-section" id="topHeader">
         <div class="teacher-desk" id="teacherDeskObj">
-            MEJA GURU
+            <div id="teacherDeskTopTxt" style="font-size: 10px; opacity: 0.9; letter-spacing: 1px; margin-bottom: 2px; font-family: 'Quicksand', sans-serif; color: #f0f0f0;">🏫 ABSENSI KELAS</div>
+            <div id="teacherDeskMainTxt" style="font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 20px; letter-spacing: 1px; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">MEJA GURU</div>
         </div>
         <div class="controls" id="controlsObj">
             <button class="btn-school btn-main-action" onclick="handleShuffle()">
-                <div class="chalk-icon"></div> ACAK POSISI
+                <div class="chalk-icon"></div> <span id="txtBtnShuffle">ACAK POSISI</span>
             </button>
             <button class="btn-school" onclick="handleOpenPicker()">
-                🎲 ACAK NAMA
+                <span id="txtBtnPicker">🎲 ACAK NAMA</span>
             </button>
             <button class="btn-school" onclick="handleOpenManager()">
-                📋 DATA SISWA
+                <span id="txtBtnData">📋 DATA SISWA</span>
             </button>
             <button class="btn-school" onclick="handleOpenSettings()">
-                ⚙️ PENGATURAN KELAS
+                <span id="txtBtnSettings">⚙️ PENGATURAN KELAS</span>
             </button>
             <button class="btn-school" onclick="handleShowStats()">
-                📊 STATISTIK
+                <span id="txtBtnStats">📊 STATISTIK</span>
             </button>
             <button class="btn-school" onclick="handlePrint()">
-                🖨️ CETAK
+                <span id="txtBtnPrint">🖨️ CETAK</span>
             </button>
         </div>
     </div>
@@ -268,74 +270,74 @@
         
         <div id="normalView" style="display:flex; flex-direction:column; flex:1; min-height:0;">
             <div style="font-size:13px; margin-bottom:10px; color:#7f8c8d; font-weight: bold;">
-                Total Siswa: <span id="studentCount">0</span> Siswa
+                <span id="txtLblTotal">Total Siswa:</span> <span id="studentCount">0</span> <span id="txtLblSiswa">Siswa</span>
             </div>
             <div style="display:flex; gap:10px; margin-bottom:10px; flex-shrink:0;">
-                <input type="text" id="newNameInput" class="manager-input" placeholder="Nama siswa baru..." style="margin:0; flex:1;">
-                <button class="btn-school btn-main-action" onclick="handleAddName()" style="padding:0 20px;">TAMBAH</button>
+                <input type="text" id="newNameInput" class="manager-input" placeholder="Nama siswa baru...">
+                <button class="btn-school btn-main-action" onclick="handleAddName()" style="padding:0 20px;" id="txtBtnAdd">TAMBAH</button>
             </div>
             <div style="display:flex; gap:10px; margin-bottom:10px; flex-shrink:0;">
-                <input type="text" id="searchInput" class="manager-input" placeholder="🔍 Cari..." style="margin:0; flex:1;" onkeyup="renderNameList()">
-                <button class="btn-school" onclick="handleOpenBulk()" style="padding:0 15px;">📝 BANYAK</button>
-                <button class="btn-school" onclick="handleOpenSort()" style="padding:0 15px;">↕️ URUT</button>
+                <input type="text" id="searchInput" class="manager-input" placeholder="🔍 Cari..." onkeyup="renderNameList()">
+                <button class="btn-school" onclick="handleOpenBulk()" style="padding:0 15px;" id="txtBtnBulk">📝 BANYAK</button>
+                <button class="btn-school" onclick="handleOpenSort()" style="padding:0 15px;" id="txtBtnSort">↕️ URUT</button>
             </div>
             <div class="name-list" id="nameListContainer"></div>
             <div class="modal-footer">
-                <button class="btn-school" style="color:#c0392b; background:#fce4ec; border-color:#edaebb; justify-content:center;" onclick="handleEliminateAll()">ABSEN SEMUA</button>
-                <button class="btn-school" style="color:#27ae60; background:#e8f8f5; border-color:#aedeba; justify-content:center;" onclick="handleRestoreAll()">HADIR SEMUA</button>
-                <button class="btn-school" style="grid-column:span 2; background:#eee; color:#555; justify-content:center;" onclick="handleResetDefault()">RESET</button>
+                <button class="btn-school" style="color:#c0392b; background:#fce4ec; border-color:#edaebb; justify-content:center;" onclick="handleEliminateAll()" id="txtBtnAbsAll">ABSEN SEMUA</button>
+                <button class="btn-school" style="color:#27ae60; background:#e8f8f5; border-color:#aedeba; justify-content:center;" onclick="handleRestoreAll()" id="txtBtnPresAll">HADIR SEMUA</button>
+                <button class="btn-school" style="grid-column:span 2; background:#eee; color:#555; justify-content:center;" onclick="handleResetDefault()" id="txtBtnReset">RESET</button>
             </div>
         </div>
 
         <div id="bulkView" style="display:none; flex-direction:column; flex:1; min-height:0;">
-            <p style="margin:10px 0 5px 0; font-size:13px; color:#7f8c8d; font-weight:bold;">Input nama (1 per baris):</p>
+            <p style="margin:10px 0 5px 0; font-size:13px; color:#7f8c8d; font-weight:bold;" id="txtLblBulkDesc">Input nama (1 per baris):</p>
             <textarea id="bulkEditArea" class="manager-input" placeholder="BUDI&#10;SITI&#10;AYU"></textarea>
             <div style="display:flex; gap:10px; flex-shrink:0;">
-                <button class="btn-school" style="flex:1; color:#c0392b; background:#fce4ec;" onclick="handleBack()">Batal</button>
-                <button class="btn-school btn-main-action" style="flex:1;" onclick="handleSaveBulk()">SIMPAN</button>
+                <button class="btn-school" style="flex:1; color:#c0392b; background:#fce4ec;" onclick="handleBack()" id="txtBtnCancel1">Batal</button>
+                <button class="btn-school btn-main-action" style="flex:1;" onclick="handleSaveBulk()" id="txtBtnSave1">SIMPAN</button>
             </div>
         </div>
 
         <div id="sortView" style="display:none; flex-direction:column; flex:1; min-height:0;">
-            <p style="margin:15px 0; font-weight:bold;">Pilih urutan:</p>
-            <button class="btn-school" style="margin-bottom:10px; justify-content:center;" onclick="handleSort('alpha'); handleCloseModal();">A-Z</button>
-            <button class="btn-school" style="margin-bottom:10px; justify-content:center;" onclick="handleSort('status'); handleCloseModal();">Status</button>
-            <button class="btn-school" style="background:#fce4ec; color:#c0392b; justify-content:center;" onclick="handleBack()">Batal</button>
+            <p style="margin:15px 0; font-weight:bold;" id="txtLblSort">Pilih urutan:</p>
+            <button class="btn-school" style="margin-bottom:10px; justify-content:center;" onclick="handleSort('alpha'); handleCloseModal();" id="txtBtnSortAZ">A-Z</button>
+            <button class="btn-school" style="margin-bottom:10px; justify-content:center;" onclick="handleSort('status'); handleCloseModal();" id="txtBtnSortStat">Status</button>
+            <button class="btn-school" style="background:#fce4ec; color:#c0392b; justify-content:center;" onclick="handleBack()" id="txtBtnCancel2">Batal</button>
         </div>
 
         <div id="settingsView" style="display:none; flex-direction:column; flex:1; min-height:0; overflow-y:auto; padding:10px 0;">
-            <label style="font-weight:bold; display:block; margin-bottom:5px;">Jumlah Baris:</label>
+            <label style="font-weight:bold; display:block; margin-bottom:5px;" id="txtLblRows">Jumlah Baris:</label>
             <input type="number" id="inputRows" class="manager-input" min="1" max="10" value="3" style="margin-bottom:15px;">
             
-            <label style="font-weight:bold; display:block; margin-bottom:5px;">Jumlah Kolom:</label>
+            <label style="font-weight:bold; display:block; margin-bottom:5px;" id="txtLblCols">Jumlah Kolom:</label>
             <input type="number" id="inputCols" class="manager-input" min="1" max="15" value="6" style="margin-bottom:15px;">
             
-            <button class="btn-school btn-main-action" style="width:100%; justify-content:center; margin-bottom:20px;" onclick="handleApplyGrid()">SIMPAN GRID</button>
+            <button class="btn-school btn-main-action" style="width:100%; justify-content:center; margin-bottom:20px;" onclick="handleApplyGrid()" id="txtBtnSaveGrid">SIMPAN GRID</button>
             
             <hr style="margin:15px 0; border:1px solid #ddd;">
             
-            <label style="font-weight:bold; display:block; margin-bottom:10px;">🖼️ BACKGROUND KELAS:</label>
-            <button class="btn-school" style="width:100%; justify-content:center; margin-bottom:8px; background:#f39c12; color:#fff; border-color:#e67e22;" onclick="document.getElementById('bgInput').click()">📷 UPLOAD BACKGROUND</button>
-            <button class="btn-school" style="width:100%; justify-content:center; background:#ecf0f1; color:#7f8c8d; border-color:#bdc3c7;" onclick="handleResetBackground()">🗑️ HAPUS BACKGROUND</button>
+            <label style="font-weight:bold; display:block; margin-bottom:10px;" id="txtLblBg">🖼️ BACKGROUND KELAS:</label>
+            <button class="btn-school" style="width:100%; justify-content:center; margin-bottom:8px; background:#f39c12; color:#fff; border-color:#e67e22;" onclick="document.getElementById('bgInput').click()" id="txtBtnUpBg">📷 UPLOAD BACKGROUND</button>
+            <button class="btn-school" style="width:100%; justify-content:center; background:#ecf0f1; color:#7f8c8d; border-color:#bdc3c7;" onclick="handleResetBackground()" id="txtBtnDelBg">🗑️ HAPUS BACKGROUND</button>
             <input type="file" id="bgInput" accept="image/*" style="display:none;" onchange="handleBackgroundUpload(event)">
 
             <hr style="margin:15px 0; border:1px solid #ddd;">
 
-            <label style="font-weight:bold; display:block; margin-bottom:10px;">💾 BACKUP DATA:</label>
-            <button class="btn-school" style="width:100%; justify-content:center; margin-bottom:8px; background:#d4e4ff; border-color:#3498db; color:#2980b9;" onclick="handleSaveJSON()">💾 SAVE JSON</button>
-            <button class="btn-school" style="width:100%; justify-content:center; background:#e8f8f5; border-color:#27ae60; color:#27ae60;" onclick="handleLoadJSON()">📂 LOAD JSON</button>
+            <label style="font-weight:bold; display:block; margin-bottom:10px;" id="txtLblBackup">💾 BACKUP DATA:</label>
+            <button class="btn-school" style="width:100%; justify-content:center; margin-bottom:8px; background:#d4e4ff; border-color:#3498db; color:#2980b9;" onclick="handleSaveJSON()" id="txtBtnSaveJ">💾 SAVE JSON</button>
+            <button class="btn-school" style="width:100%; justify-content:center; background:#e8f8f5; border-color:#27ae60; color:#27ae60;" onclick="handleLoadJSON()" id="txtBtnLoadJ">📂 LOAD JSON</button>
             <input type="file" id="fileInput" accept=".json" style="display:none;" onchange="loadJSONFile(event)">
         </div>
 
         <div id="pickerView" style="display:none; flex-direction:column; flex:1; min-height:0;">
             <div style="text-align:center; color: #7f8c8d; font-size: 14px; font-weight: bold; background: rgba(0,0,0,0.05); padding: 8px; border-radius: 8px; margin-bottom: 10px;">
-                <span id="labelAvailable">Belum Terpilih: </span> <span id="pickerAvailableCount" style="color:var(--ui-wood);">0</span> / <span id="pickerTotalCount">0</span> Siswa Hadir
+                <span id="labelAvailable">Belum Terpilih: </span> <span id="pickerAvailableCount" style="color:var(--ui-wood);">0</span> / <span id="pickerTotalCount">0</span> <span id="txtLblHadir">Siswa Hadir</span>
             </div>
             
             <div style="display: flex; justify-content: center; margin-bottom: 5px;">
                 <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; font-weight: bold; color: var(--text-dark);">
                     <input type="checkbox" id="allowRepeatCheck" onchange="toggleRepeatPick()" style="width: 16px; height: 16px; cursor: pointer;">
-                    Bisa Terpilih Berkali-kali
+                    <span id="txtLblRepeat">Bisa Terpilih Berkali-kali</span>
                 </label>
             </div>
             
@@ -344,11 +346,11 @@
             <button class="btn-school btn-main-action" id="btnDoPick" style="width:100%; justify-content:center; padding: 18px; font-size: 18px; letter-spacing: 1px;" onclick="doPickName()">🎲 MULAI ACAK</button>
             
             <div style="display: flex; gap: 10px; margin-top: 15px; flex-shrink: 0;">
-                <button class="btn-school" style="flex: 1; justify-content:center; background:#d4e4ff; border-color:#3498db; color:#2980b9;" onclick="undoPick()">↩️ Undo</button>
-                <button class="btn-school" style="flex: 1; justify-content:center; color:#c0392b; background:#fce4ec; border-color:#edaebb;" onclick="resetPickerHistory()">🗑️ Reset</button>
+                <button class="btn-school" style="flex: 1; justify-content:center; background:#d4e4ff; border-color:#3498db; color:#2980b9;" onclick="undoPick()" id="txtBtnUndo">↩️ Undo</button>
+                <button class="btn-school" style="flex: 1; justify-content:center; color:#c0392b; background:#fce4ec; border-color:#edaebb;" onclick="resetPickerHistory()" id="txtBtnResetPick">🗑️ Reset</button>
             </div>
 
-            <div style="margin-top: 15px; font-size: 12px; font-weight: bold; color: #7f8c8d;">RIWAYAT TERPILIH:</div>
+            <div style="margin-top: 15px; font-size: 12px; font-weight: bold; color: #7f8c8d;" id="txtLblHist">RIWAYAT TERPILIH:</div>
             <div class="picker-history-list" id="pickerHistoryContainer"></div>
         </div>
 
@@ -356,6 +358,54 @@
 </div>
 
 <script>
+    // === DICTIONARY BAHASA (i18n) ===
+    const i18n = {
+        id: {
+            povT: "👨‍🏫 POV Guru", povS: "🧑‍🎓 POV Murid",
+            toastPovT: "Mode POV Guru Aktif 👨‍🏫", toastPovS: "Mode POV Murid Aktif 🧑‍🎓",
+            tDeskTop: "🏫 ABSENSI KELAS", tDeskMain: "MEJA GURU",
+            btnShuf: "ACAK POSISI", btnPick: "🎲 ACAK NAMA", btnData: "📋 DATA SISWA", btnSet: "⚙️ PENGATURAN KELAS", btnStat: "📊 STATISTIK", btnPrint: "🖨️ CETAK",
+            stTot: "Total", stPres: "Hadir", stAbs: "Absen", stSeat: "Kursi", stOcc: "Okupansi",
+            modData: "BUKU ABSEN SISWA", modBulk: "📝 INPUT BANYAK", modSort: "↕️ URUTKAN DATA", modSet: "⚙️ PENGATURAN KELAS", modPick: "🎲 RANDOM NAME PICKER",
+            lblTot: "Total Siswa: ", lblSis: " Siswa", phNew: "Nama siswa baru...", btnAdd: "TAMBAH", phSearch: "🔍 Cari...",
+            btnBulk: "📝 BANYAK", btnSort: "↕️ URUT", btnAbsAll: "ABSEN SEMUA", btnPresAll: "HADIR SEMUA", btnReset: "RESET",
+            lblBulk: "Input nama (1 per baris):", phBulk: "BUDI\nSITI\nAYU", btnCancel: "Batal", btnSave: "SIMPAN",
+            lblSort: "Pilih urutan:", btnSortStatus: "Status",
+            lblRow: "Jumlah Baris:", lblCol: "Jumlah Kolom:", btnSaveGrid: "SIMPAN GRID",
+            lblBg: "🖼️ BACKGROUND KELAS:", btnUpBg: "📷 UPLOAD BACKGROUND", btnDelBg: "🗑️ HAPUS BACKGROUND",
+            lblBack: "💾 BACKUP DATA:", btnSaveJ: "💾 SAVE JSON", btnLoadJ: "📂 LOAD JSON",
+            lblUnpick: "Belum Terpilih: ", lblCand: "Kandidat Acak: ", lblHadir: " Siswa Hadir", lblRep: "Bisa Terpilih Berkali-kali",
+            pickReady: "SIAP ACAK", btnDoPick: "🎲 MULAI ACAK", btnUndo: "↩️ Undo", btnResPick: "🗑️ Reset", lblHist: "RIWAYAT TERPILIH:", pickDone: "SELESAI",
+            lblAbsent: "(Sedang Absen)", emptySeat: "KOSONG", seatNum: "MEJA ", openSeat: "+ Buka Meja",
+            statHadir: "HADIR", statAbsen: "ABSEN",
+            pmtName: "Nama:", confDel: "Hapus?", confAbsAll: "Tandai semua ABSEN?", confReset: "Reset ke data awal?", confLoad: "⚠️ Load data ini?\n\nData lama akan diganti!", confResPick: "Reset seluruh riwayat undian kelas?",
+            tsShuf: "Posisi diacak ✓", tsAdd: " ditambahkan ✓", tsMax: "Max ", tsMaxS: " siswa!", tsSave: "Data disimpan ✓", tsSort: "Data diurutkan ✓", tsGrid: "Grid disimpan ✓", tsAbsAll: "Semua ABSEN", tsPresAll: "Semua HADIR", tsRes: "Data direset ✓", tsProcBg: "⏳ Memproses gambar...", tsErrBg: "❌ Gagal: Gambar ini masih terlalu berat memori.", tsSuccBg: "✅ Gambar dikompres & dipasang!", tsDelBg: "🗑️ Background direset ke default", tsSaveJ: "✅ JSON berhasil disave!", tsLoadJ: "✅ JSON berhasil diload!", tsErrJ: "❌ File tidak valid!", tsErrNo: "Tidak ada siswa yang HADIR di kelas.", tsErrAll: "Semua siswa yang hadir sudah terpilih!", tsPick: "Terpilih: ", tsErrNoU: "Belum ada nama yang terpilih.", tsUndo: "Dibatalkan: ", tsResPick: "Riwayat berhasil di-reset."
+        },
+        en: {
+            povT: "👨‍🏫 Teacher POV", povS: "🧑‍🎓 Student POV",
+            toastPovT: "Teacher POV Active 👨‍🏫", toastPovS: "Student POV Active 🧑‍🎓",
+            tDeskTop: "🏫 CLASS ATTENDANCE", tDeskMain: "TEACHER DESK",
+            btnShuf: "SHUFFLE SEATS", btnPick: "🎲 RANDOM PICKER", btnData: "📋 STUDENTS DATA", btnSet: "⚙️ SETTINGS", btnStat: "📊 STATISTICS", btnPrint: "🖨️ PRINT",
+            stTot: "Total", stPres: "Present", stAbs: "Absent", stSeat: "Seats", stOcc: "Occupancy",
+            modData: "STUDENTS DATA", modBulk: "📝 BULK INPUT", modSort: "↕️ SORT DATA", modSet: "⚙️ SETTINGS", modPick: "🎲 RANDOM NAME PICKER",
+            lblTot: "Total Students: ", lblSis: " Students", phNew: "New student name...", btnAdd: "ADD", phSearch: "🔍 Search...",
+            btnBulk: "📝 BULK", btnSort: "↕️ SORT", btnAbsAll: "ALL ABSENT", btnPresAll: "ALL PRESENT", btnReset: "RESET",
+            lblBulk: "Input names (1 per line):", phBulk: "JOHN\nJANE\nDOE", btnCancel: "Cancel", btnSave: "SAVE",
+            lblSort: "Sort by:", btnSortStatus: "Status",
+            lblRow: "Rows Count:", lblCol: "Cols Count:", btnSaveGrid: "SAVE GRID",
+            lblBg: "🖼️ CLASS BACKGROUND:", btnUpBg: "📷 UPLOAD BACKGROUND", btnDelBg: "🗑️ REMOVE BACKGROUND",
+            lblBack: "💾 BACKUP DATA:", btnSaveJ: "💾 SAVE JSON", btnLoadJ: "📂 LOAD JSON",
+            lblUnpick: "Not Picked: ", lblCand: "Candidates: ", lblHadir: " Present Students", lblRep: "Allow Repeat Pick",
+            pickReady: "READY TO PICK", btnDoPick: "🎲 START PICKING", btnUndo: "↩️ Undo", btnResPick: "🗑️ Reset", lblHist: "PICK HISTORY:", pickDone: "DONE",
+            lblAbsent: "(Currently Absent)", emptySeat: "EMPTY", seatNum: "SEAT ", openSeat: "+ Open Seat",
+            statHadir: "PRESENT", statAbsen: "ABSENT",
+            pmtName: "Name:", confDel: "Delete?", confAbsAll: "Mark all as ABSENT?", confReset: "Reset to default data?", confLoad: "⚠️ Load this data?\n\nOld data will be replaced!", confResPick: "Reset the entire picking history?",
+            tsShuf: "Seats shuffled ✓", tsAdd: " added ✓", tsMax: "Max ", tsMaxS: " students!", tsSave: "Data saved ✓", tsSort: "Data sorted ✓", tsGrid: "Grid saved ✓", tsAbsAll: "All ABSENT", tsPresAll: "All PRESENT", tsRes: "Data reset ✓", tsProcBg: "⏳ Processing image...", tsErrBg: "❌ Failed: Image is too large.", tsSuccBg: "✅ Image compressed & applied!", tsDelBg: "🗑️ Background reset to default", tsSaveJ: "✅ JSON saved successfully!", tsLoadJ: "✅ JSON loaded successfully!", tsErrJ: "❌ Invalid file!", tsErrNo: "No PRESENT students in class.", tsErrAll: "All present students have been picked!", tsPick: "Picked: ", tsErrNoU: "No name picked yet.", tsUndo: "Undid: ", tsResPick: "History reset successfully."
+        }
+    };
+
+    let currentLang = 'id';
+
     // === SISTEM CRYPTO SECURE RANDOM ===
     function getSecureRandomInt(max) {
         const randomBuffer = new Uint32Array(1);
@@ -383,11 +433,80 @@
     let modalHistory = []; 
     let isTeacherPOV = false; 
     let customBackground = null;
-    
-    // === DATA PICKER & GENDER ===
     let pickerHistory = []; 
     let allowRepeatPick = false; 
-    let customGenders = {}; // Menyimpan perubahan gender yang diset manual oleh user
+    let customGenders = {};
+
+    function toggleLang() {
+        currentLang = currentLang === 'id' ? 'en' : 'id';
+        localStorage.setItem('appLang', currentLang);
+        applyLangUI();
+        renderSeats();
+        renderNameList();
+        renderPickerUI();
+        if (document.getElementById('statsPanel').style.display === 'grid') handleShowStats();
+    }
+
+    function applyLangUI() {
+        const t = i18n[currentLang];
+        document.getElementById('btnLangToggle').textContent = currentLang === 'id' ? '🇮🇩 ID' : '🇺🇸 EN';
+        document.getElementById('btnPovToggle').textContent = isTeacherPOV ? t.povS : t.povT;
+        
+        document.getElementById('teacherDeskTopTxt').textContent = t.tDeskTop;
+        document.getElementById('teacherDeskMainTxt').textContent = t.tDeskMain;
+        
+        document.getElementById('txtBtnShuffle').textContent = t.btnShuf;
+        document.getElementById('txtBtnPicker').textContent = t.btnPick;
+        document.getElementById('txtBtnData').textContent = t.btnData;
+        document.getElementById('txtBtnSettings').textContent = t.btnSet;
+        document.getElementById('txtBtnStats').textContent = t.btnStat;
+        document.getElementById('txtBtnPrint').textContent = t.btnShuf; // Typo fix visual
+        document.getElementById('txtBtnPrint').textContent = t.btnPrint;
+        
+        document.getElementById('txtLblTotal').textContent = t.lblTot;
+        document.getElementById('txtLblSiswa').textContent = t.lblSis;
+        document.getElementById('newNameInput').placeholder = t.phNew;
+        document.getElementById('txtBtnAdd').textContent = t.btnAdd;
+        document.getElementById('searchInput').placeholder = t.phSearch;
+        document.getElementById('txtBtnBulk').textContent = t.btnBulk;
+        document.getElementById('txtBtnSort').textContent = t.btnSort;
+        document.getElementById('txtBtnAbsAll').textContent = t.btnAbsAll;
+        document.getElementById('txtBtnPresAll').textContent = t.btnPresAll;
+        document.getElementById('txtBtnReset').textContent = t.btnReset;
+        
+        document.getElementById('txtLblBulkDesc').textContent = t.lblBulk;
+        document.getElementById('bulkEditArea').placeholder = t.phBulk;
+        document.getElementById('txtBtnCancel1').textContent = t.btnCancel;
+        document.getElementById('txtBtnSave1').textContent = t.btnSave;
+        
+        document.getElementById('txtLblSort').textContent = t.lblSort;
+        document.getElementById('txtBtnSortStat').textContent = t.btnSortStatus;
+        document.getElementById('txtBtnCancel2').textContent = t.btnCancel;
+        
+        document.getElementById('txtLblRows').textContent = t.lblRow;
+        document.getElementById('txtLblCols').textContent = t.lblCol;
+        document.getElementById('txtBtnSaveGrid').textContent = t.btnSaveGrid;
+        document.getElementById('txtLblBg').textContent = t.lblBg;
+        document.getElementById('txtBtnUpBg').textContent = t.btnUpBg;
+        document.getElementById('txtBtnDelBg').textContent = t.btnDelBg;
+        document.getElementById('txtLblBackup').textContent = t.lblBack;
+        document.getElementById('txtBtnSaveJ').textContent = t.btnSaveJ;
+        document.getElementById('txtBtnLoadJ').textContent = t.btnLoadJ;
+        
+        document.getElementById('txtLblHadir').textContent = t.lblHadir;
+        document.getElementById('txtLblRepeat').textContent = t.lblRep;
+        document.getElementById('btnDoPick').textContent = t.btnDoPick;
+        document.getElementById('txtBtnUndo').textContent = t.btnUndo;
+        document.getElementById('txtBtnResetPick').textContent = t.btnResPick;
+        document.getElementById('txtLblHist').textContent = t.lblHist;
+
+        const mTitle = document.getElementById('modalTitle');
+        if (document.getElementById('normalView').style.display !== 'none') mTitle.textContent = t.modData;
+        else if (document.getElementById('bulkView').style.display !== 'none') mTitle.textContent = t.modBulk;
+        else if (document.getElementById('sortView').style.display !== 'none') mTitle.textContent = t.modSort;
+        else if (document.getElementById('settingsView').style.display !== 'none') mTitle.textContent = t.modSet;
+        else if (document.getElementById('pickerView').style.display !== 'none') mTitle.textContent = t.modPick;
+    }
 
     function showView(viewId, title) {
         document.getElementById('normalView').style.display = 'none';
@@ -423,52 +542,45 @@
         }
     });
 
-    // === MODAL MENU HANDLERS ===
     function handleOpenManager() {
-        modalHistory = []; pushView('normalView', 'BUKU ABSEN SISWA'); renderNameList();
+        modalHistory = []; pushView('normalView', i18n[currentLang].modData); renderNameList();
     }
     function handleOpenSettings() {
-        modalHistory = []; pushView('settingsView', '⚙️ PENGATURAN KELAS');
+        modalHistory = []; pushView('settingsView', i18n[currentLang].modSet);
         document.getElementById('inputRows').value = totalRows;
         document.getElementById('inputCols').value = totalCols;
     }
     function handleOpenBulk() {
-        pushView('bulkView', '📝 INPUT BANYAK');
+        pushView('bulkView', i18n[currentLang].modBulk);
         document.getElementById('bulkEditArea').value = masterNames.map(n => n.name).join('\n');
     }
-    function handleOpenSort() { pushView('sortView', '↕️ URUTKAN DATA'); }
+    function handleOpenSort() { pushView('sortView', i18n[currentLang].modSort); }
     
     function handleCloseModal() {
         if(modalHistory.length > 0) { history.go(-modalHistory.length); modalHistory = []; } 
         else { showView(null); }
     }
 
-    // === ACAK NAMA (Gacha Picker) HANDLERS ===
     function handleOpenPicker() {
-        modalHistory = []; 
-        pushView('pickerView', '🎲 RANDOM NAME PICKER');
-        renderPickerUI();
+        modalHistory = []; pushView('pickerView', i18n[currentLang].modPick); renderPickerUI();
     }
     
     function toggleRepeatPick() {
         allowRepeatPick = document.getElementById('allowRepeatCheck').checked;
-        saveState();
-        renderPickerUI();
+        saveState(); renderPickerUI();
     }
 
     function renderPickerUI() {
+        const t = i18n[currentLang];
         const presentNames = masterNames.filter(n => n.active).map(n => n.name);
         
         let available = [];
-        if (allowRepeatPick) {
-            available = [...presentNames];
-        } else {
-            available = presentNames.filter(name => !pickerHistory.some(h => h.name === name));
-        }
+        if (allowRepeatPick) { available = [...presentNames]; } 
+        else { available = presentNames.filter(name => !pickerHistory.some(h => h.name === name)); }
         
         document.getElementById('pickerTotalCount').textContent = presentNames.length;
         document.getElementById('pickerAvailableCount').textContent = available.length;
-        document.getElementById('labelAvailable').textContent = allowRepeatPick ? "Kandidat Acak: " : "Belum Terpilih: ";
+        document.getElementById('labelAvailable').textContent = allowRepeatPick ? t.lblCand : t.lblUnpick;
         
         const listEl = document.getElementById('pickerHistoryContainer');
         listEl.innerHTML = '';
@@ -476,7 +588,7 @@
         const reversed = pickerHistory.slice().reverse();
         reversed.forEach((h, idx) => {
             const isCurrentlyAbsent = !presentNames.includes(h.name);
-            const statusLabel = isCurrentlyAbsent ? ` <span style="font-size:10px; color:#e74c3c;">(Sedang Absen)</span>` : '';
+            const statusLabel = isCurrentlyAbsent ? ` <span style="font-size:10px; color:#e74c3c;">${t.lblAbsent}</span>` : '';
             const decoration = isCurrentlyAbsent ? 'text-decoration: line-through; opacity: 0.6;' : '';
 
             const div = document.createElement('div');
@@ -497,45 +609,32 @@
 
         const display = document.getElementById('pickerDisplay');
         if (available.length === 0 && presentNames.length > 0 && pickerHistory.length > 0) {
-            display.innerText = "SELESAI";
-            display.style.color = "#2ecc71";
-        } else if (display.innerText !== "SIAP ACAK" && (!allowRepeatPick && !pickerHistory.some(h => h.name === display.innerText))) {
-            display.innerText = "SIAP ACAK";
-            display.style.color = "";
+            display.innerText = t.pickDone; display.style.color = "#2ecc71";
+        } else if (display.innerText !== t.pickReady && (!allowRepeatPick && !pickerHistory.some(h => h.name === display.innerText))) {
+            display.innerText = t.pickReady; display.style.color = "";
         }
     }
 
     function doPickName() {
+        const t = i18n[currentLang];
         const presentNames = masterNames.filter(n => n.active).map(n => n.name);
         let available = [];
-        if (allowRepeatPick) {
-            available = [...presentNames];
-        } else {
-            available = presentNames.filter(name => !pickerHistory.some(h => h.name === name));
-        }
+        if (allowRepeatPick) { available = [...presentNames]; } 
+        else { available = presentNames.filter(name => !pickerHistory.some(h => h.name === name)); }
         
-        if (presentNames.length === 0) {
-            showToast('Tidak ada siswa yang HADIR di kelas.', 'error');
-            return;
-        }
-
-        if (available.length === 0) {
-            showToast('Semua siswa yang hadir sudah terpilih!', 'error');
-            return;
-        }
+        if (presentNames.length === 0) { showToast(t.tsErrNo, 'error'); return; }
+        if (available.length === 0) { showToast(t.tsErrAll, 'error'); return; }
 
         const btn = document.getElementById('btnDoPick');
         const display = document.getElementById('pickerDisplay');
-        btn.disabled = true;
-        btn.style.opacity = '0.5';
+        btn.disabled = true; btn.style.opacity = '0.5';
         
         try { if (navigator.vibrate) navigator.vibrate(10); } catch (e) {}
 
         let i = 0;
         const loop = setInterval(() => {
             const randIndex = getSecureRandomInt(available.length);
-            const rand = available[randIndex];
-            display.innerText = rand;
+            display.innerText = available[randIndex];
             display.style.color = "";
 
             if (i++ > 15) {
@@ -543,59 +642,42 @@
                 const winnerIndex = getSecureRandomInt(available.length);
                 const winner = available[winnerIndex];
                 
-                pickerHistory.push({
-                    name: winner,
-                    time: Date.now()
-                });
-                
-                display.innerText = winner;
-                display.style.color = '#e74c3c'; 
-                
+                pickerHistory.push({ name: winner, time: Date.now() });
+                display.innerText = winner; display.style.color = '#e74c3c'; 
                 try { if (navigator.vibrate) navigator.vibrate(30); } catch (e) {}
-                showToast('Terpilih: ' + winner, 'success');
+                showToast(t.tsPick + winner, 'success');
 
-                renderPickerUI();
-                saveState(); 
-                
-                btn.disabled = false;
-                btn.style.opacity = '1';
+                renderPickerUI(); saveState(); 
+                btn.disabled = false; btn.style.opacity = '1';
             }
         }, 60);
     }
 
     function undoPick() {
-        if (pickerHistory.length === 0) {
-            showToast('Belum ada nama yang terpilih.', 'info');
-            return;
-        }
+        const t = i18n[currentLang];
+        if (pickerHistory.length === 0) { showToast(t.tsErrNoU, 'info'); return; }
         const last = pickerHistory.pop();
-        
         const display = document.getElementById('pickerDisplay');
-        display.innerText = "SIAP ACAK";
-        display.style.color = "";
+        display.innerText = t.pickReady; display.style.color = "";
         
-        renderPickerUI();
-        saveState();
-        showToast(`Dibatalkan: ${last.name}`, 'info');
+        renderPickerUI(); saveState(); showToast(t.tsUndo + last.name, 'info');
     }
 
     function resetPickerHistory() {
+        const t = i18n[currentLang];
         if (pickerHistory.length === 0) return;
-        if (confirm("Reset seluruh riwayat undian kelas?")) {
+        if (confirm(t.confResPick)) {
             pickerHistory = [];
             const display = document.getElementById('pickerDisplay');
-            display.innerText = "SIAP ACAK";
-            display.style.color = "";
-            renderPickerUI();
-            saveState();
-            showToast('Riwayat berhasil di-reset.', 'success');
+            display.innerText = t.pickReady; display.style.color = "";
+            renderPickerUI(); saveState(); showToast(t.tsResPick, 'success');
         }
     }
 
-    // === SEATING & KELAS HANDLERS ===
-    function handleShuffle() { distributeNames(); saveToHistory(); renderSeats(); saveState(); showToast('Posisi diacak ✓', 'success'); }
+    function handleShuffle() { distributeNames(); saveToHistory(); renderSeats(); saveState(); showToast(i18n[currentLang].tsShuf, 'success'); }
 
     function handleShowStats() {
+        const t = i18n[currentLang];
         const panel = document.getElementById('statsPanel');
         if (panel.style.display === 'grid') { panel.style.display = 'none'; return; }
         
@@ -605,11 +687,11 @@
         const occupancy = activeSeats > 0 ? ((present / activeSeats) * 100).toFixed(1) : 0;
 
         panel.innerHTML = `
-            <div class="stat-card"><div class="stat-value">${masterNames.length}</div><div class="stat-label">Total</div></div>
-            <div class="stat-card"><div class="stat-value">${present}</div><div class="stat-label">Hadir</div></div>
-            <div class="stat-card"><div class="stat-value">${absent}</div><div class="stat-label">Absen</div></div>
-            <div class="stat-card"><div class="stat-value">${activeSeats}</div><div class="stat-label">Kursi</div></div>
-            <div class="stat-card"><div class="stat-value">${occupancy}%</div><div class="stat-label">Okupansi</div></div>
+            <div class="stat-card"><div class="stat-value">${masterNames.length}</div><div class="stat-label">${t.stTot}</div></div>
+            <div class="stat-card"><div class="stat-value">${present}</div><div class="stat-label">${t.stPres}</div></div>
+            <div class="stat-card"><div class="stat-value">${absent}</div><div class="stat-label">${t.stAbs}</div></div>
+            <div class="stat-card"><div class="stat-value">${activeSeats}</div><div class="stat-label">${t.stSeat}</div></div>
+            <div class="stat-card"><div class="stat-value">${occupancy}%</div><div class="stat-label">${t.stOcc}</div></div>
         `;
         panel.style.display = 'grid';
     }
@@ -617,68 +699,75 @@
     function handlePrint() { window.print(); }
 
     function handleAddName() {
+        const t = i18n[currentLang];
         const val = document.getElementById('newNameInput').value.trim().toUpperCase();
         const maxS = getActiveSeatCount();
         if (val && masterNames.length < maxS) {
             masterNames.push({ name: val, active: true });
             document.getElementById('newNameInput').value = '';
             renderNameList(); distributeNames(); saveToHistory(); renderSeats(); saveState();
-            showToast(`${val} ditambahkan ✓`, 'success');
+            showToast(`${val}${t.tsAdd}`, 'success');
         }
     }
 
     function handleSaveBulk() {
+        const t = i18n[currentLang];
         const lines = document.getElementById('bulkEditArea').value.split('\n').map(s => s.trim().toUpperCase()).filter(s => s);
         const maxS = getActiveSeatCount();
-        if (lines.length > maxS) { showToast(`Max ${maxS} siswa!`, 'error'); return; }
+        if (lines.length > maxS) { showToast(`${t.tsMax}${maxS}${t.tsMaxS}`, 'error'); return; }
         masterNames = lines.map(n => ({ name: n, active: true }));
-        seats.forEach(s => { s.currentName = ""; s.locked = false; }); // Manual gender dihapus dari seat
+        seats.forEach(s => { s.currentName = ""; s.locked = false; }); 
         distributeNames(); saveToHistory(); renderSeats(); saveState(); handleCloseModal();
-        showToast('Data disimpan ✓', 'success');
+        showToast(t.tsSave, 'success');
     }
 
     function handleSort(type) {
+        const t = i18n[currentLang];
         if (type === 'alpha') masterNames.sort((a, b) => a.name.localeCompare(b.name));
         else masterNames.sort((a, b) => b.active - a.active);
-        distributeNames(); saveToHistory(); renderSeats(); saveState(); showToast('Data diurutkan ✓', 'success');
+        distributeNames(); saveToHistory(); renderSeats(); saveState(); showToast(t.tsSort, 'success');
     }
 
     function handleApplyGrid() {
+        const t = i18n[currentLang];
         const r = parseInt(document.getElementById('inputRows').value);
         const c = parseInt(document.getElementById('inputCols').value);
         if (r > 0 && c > 0) {
             totalRows = r; totalCols = c; initSeats(); saveState(); handleCloseModal();
-            showToast('Grid disimpan ✓', 'success');
+            showToast(t.tsGrid, 'success');
         }
     }
 
     function handleEliminateAll() {
-        if (confirm("Tandai semua ABSEN?")) {
+        const t = i18n[currentLang];
+        if (confirm(t.confAbsAll)) {
             masterNames.forEach(n => n.active = false);
-            renderNameList(); distributeNames(); saveToHistory(); renderSeats(); saveState(); showToast('Semua ABSEN', 'info');
+            renderNameList(); distributeNames(); saveToHistory(); renderSeats(); saveState(); showToast(t.tsAbsAll, 'info');
         }
     }
 
     function handleRestoreAll() {
+        const t = i18n[currentLang];
         masterNames.forEach(n => n.active = true);
-        renderNameList(); distributeNames(); saveToHistory(); renderSeats(); saveState(); showToast('Semua HADIR', 'info');
+        renderNameList(); distributeNames(); saveToHistory(); renderSeats(); saveState(); showToast(t.tsPresAll, 'info');
     }
 
     function handleResetDefault() {
-        if (confirm("Reset ke data awal?")) {
+        const t = i18n[currentLang];
+        if (confirm(t.confReset)) {
             masterNames = defaultNames.map(n => ({ name: n, active: true }));
             renderNameList(); seats.forEach(s => { s.currentName = ""; s.locked = false; });
-            pickerHistory = [];
-            customGenders = {}; // Reset semua settingan gender manual
-            distributeNames(); saveToHistory(); renderSeats(); saveState(); showToast('Data direset ✓', 'info');
+            pickerHistory = []; customGenders = {}; 
+            distributeNames(); saveToHistory(); renderSeats(); saveState(); showToast(t.tsRes, 'info');
         }
     }
 
     function handleBackgroundUpload(event) {
+        const t = i18n[currentLang];
         const file = event.target.files[0];
         if (!file) return;
 
-        showToast('⏳ Memproses gambar...', 'info');
+        showToast(t.tsProcBg, 'info');
         const reader = new FileReader();
         reader.onload = (e) => {
             const img = new Image();
@@ -698,10 +787,10 @@
                 ctx.drawImage(img, 0, 0, width, height);
                 const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
 
-                if(compressedDataUrl.length > 4500000) { showToast('❌ Gagal: Gambar ini masih terlalu berat memori.', 'error'); return; }
+                if(compressedDataUrl.length > 4500000) { showToast(t.tsErrBg, 'error'); return; }
 
                 customBackground = compressedDataUrl;
-                applyBackground(); saveState(); showToast('✅ Gambar dikompres & dipasang!', 'success');
+                applyBackground(); saveState(); showToast(t.tsSuccBg, 'success');
             };
             img.src = e.target.result;
         };
@@ -712,7 +801,7 @@
     function handleResetBackground() {
         if (!customBackground) return;
         customBackground = null;
-        applyBackground(); saveState(); showToast('🗑️ Background direset ke default', 'info');
+        applyBackground(); saveState(); showToast(i18n[currentLang].tsDelBg, 'info');
     }
 
     function applyBackground() {
@@ -733,18 +822,19 @@
         const blob = new Blob([json], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a'); a.href = url; a.download = `denah_${new Date().toISOString().split('T')[0]}.json`;
-        a.click(); URL.revokeObjectURL(url); showToast('✅ JSON berhasil disave!', 'success');
+        a.click(); URL.revokeObjectURL(url); showToast(i18n[currentLang].tsSaveJ, 'success');
     }
 
     function handleLoadJSON() { document.getElementById('fileInput').click(); }
 
     function loadJSONFile(event) {
+        const t = i18n[currentLang];
         const file = event.target.files[0]; if (!file) return;
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
                 const data = JSON.parse(e.target.result);
-                if (confirm('⚠️ Load data ini?\n\nData lama akan diganti!')) {
+                if (confirm(t.confLoad)) {
                     masterNames = data.masterNames || []; seats = data.seats || [];
                     totalRows = data.totalRows || 3; totalCols = data.totalCols || 6;
                     customBackground = data.customBackground || null;
@@ -752,14 +842,12 @@
                     allowRepeatPick = data.allowRepeatPick || false;
                     customGenders = data.customGenders || {};
                     
-                    if(document.getElementById('allowRepeatCheck')) {
-                        document.getElementById('allowRepeatCheck').checked = allowRepeatPick;
-                    }
+                    if(document.getElementById('allowRepeatCheck')) document.getElementById('allowRepeatCheck').checked = allowRepeatPick;
 
                     saveState(); renderSeats(); applyBackground(); handleCloseModal();
-                    showToast('✅ JSON berhasil diload!', 'success');
+                    showToast(t.tsLoadJ, 'success');
                 }
-            } catch (e) { showToast('❌ File tidak valid!', 'error'); }
+            } catch (e) { showToast(t.tsErrJ, 'error'); }
         };
         reader.readAsText(file); event.target.value = '';
     }
@@ -770,6 +858,7 @@
     }
 
     function loadData() {
+        currentLang = localStorage.getItem('appLang') || 'id';
         const saved = localStorage.getItem('gacha_class_fixed');
         if (saved) {
             const data = JSON.parse(saved);
@@ -780,10 +869,7 @@
             allowRepeatPick = data.allowRepeatPick || false;
             customGenders = data.customGenders || {};
             
-            if(document.getElementById('allowRepeatCheck')) {
-                document.getElementById('allowRepeatCheck').checked = allowRepeatPick;
-            }
-
+            if(document.getElementById('allowRepeatCheck')) document.getElementById('allowRepeatCheck').checked = allowRepeatPick;
             return true;
         }
         return false;
@@ -814,8 +900,11 @@
 
     function getAvatarUrl(name) {
         const gender = customGenders[name] || detectGender(name);
+        
+        // BUG FIX UKURAN AVATAR CEWEK: viewbox="0 100 100" diganti jadi "0 0 100 100"
         const maleSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#e8f4f8"/><circle cx="50" cy="35" r="20" fill="#2c3e50"/><path d="M15 100 C 15 50, 85 50, 85 100" fill="#2c3e50"/></svg>`;
         const femaleSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#fce4ec"/><circle cx="50" cy="35" r="20" fill="#2c3e50"/><path d="M20 60 L80 60 L75 100 L25 100 Z" fill="#2c3e50"/></svg>`;
+        
         return gender === "F" ? "data:image/svg+xml;utf8," + encodeURIComponent(femaleSvg) : "data:image/svg+xml;utf8," + encodeURIComponent(maleSvg);
     }
 
@@ -823,10 +912,7 @@
         const seat = seats[idx]; if (!seat.currentName) return;
         const name = seat.currentName;
         const currentGender = customGenders[name] || detectGender(name);
-        
-        // Simpan manual gender berdasarkan namanya, bukan mejanya
         customGenders[name] = currentGender === 'M' ? 'F' : 'M';
-        
         renderSeats(); saveState();
     };
 
@@ -840,16 +926,17 @@
 
     function togglePOV() {
         isTeacherPOV = !isTeacherPOV;
+        const t = i18n[currentLang];
         
-        const btn = document.querySelector('.pov-toggle');
+        const btn = document.getElementById('btnPovToggle');
         const desk = document.getElementById('teacherDeskObj');
         const controls = document.getElementById('controlsObj');
         const topHeader = document.getElementById('topHeader');
         const bottomFooter = document.getElementById('bottomFooter');
 
         if (isTeacherPOV) {
-            btn.innerHTML = '🧑‍🎓 POV Murid';
-            btn.style.background = '#3498db'; btn.style.color = '#fff'; btn.style.borderColor = '#2980b9'; btn.title = 'Ubah ke POV Murid';
+            btn.innerHTML = t.povS;
+            btn.style.background = '#3498db'; btn.style.color = '#fff'; btn.style.borderColor = '#2980b9';
             
             desk.classList.add('pov-guru-mode');
             controls.classList.add('pov-guru-mode');
@@ -859,10 +946,10 @@
             bottomFooter.classList.add('show');
             topHeader.style.display = 'none'; 
             
-            showToast('Mode POV Guru Aktif 👨‍🏫', 'info');
+            showToast(t.toastPovT, 'info');
         } else {
-            btn.innerHTML = '👨‍🏫 POV Guru';
-            btn.style.background = 'var(--ui-paper)'; btn.style.color = 'var(--text-dark)'; btn.style.borderColor = 'var(--ui-wood)'; btn.title = 'Ubah ke POV Guru';
+            btn.innerHTML = t.povT;
+            btn.style.background = 'var(--ui-paper)'; btn.style.color = 'var(--text-dark)'; btn.style.borderColor = 'var(--ui-wood)';
             
             desk.classList.remove('pov-guru-mode');
             controls.classList.remove('pov-guru-mode');
@@ -872,7 +959,7 @@
             topHeader.style.display = 'flex'; 
             bottomFooter.classList.remove('show');
             
-            showToast('Mode POV Murid Aktif 🧑‍🎓', 'info');
+            showToast(t.toastPovS, 'info');
         }
 
         renderSeats();
@@ -901,6 +988,7 @@
     }
 
     function renderSeats() {
+        const t = i18n[currentLang];
         const container = document.getElementById('classroom');
         const bottomFooter = document.getElementById('bottomFooter');
         
@@ -936,11 +1024,12 @@
                 
                 if (seat.disabled) {
                     div.className = 'seat is-disabled';
+                    div.setAttribute('data-label', t.openSeat);
                     div.onclick = () => { seat.disabled = false; distributeNames(); renderSeats(); saveState(); };
                 } else {
                     div.className = `seat ${rowClass} ${seat.locked ? 'is-locked' : ''}`;
                     const name = seat.currentName;
-                    const avatar = getAvatarUrl(name); // Memanggil gender berdasarkan nama sekarang
+                    const avatar = getAvatarUrl(name);
                     let fontSize = "text-normal";
                     if (name.length > 18) fontSize = "text-tiny";
                     else if (name.length > 12) fontSize = "text-small";
@@ -956,8 +1045,8 @@
                         <div class="gender-btn" onclick="event.preventDefault(); event.stopImmediatePropagation(); toggleGender(${idx});">${genderIcon}</div>
                         
                         <div class="char-img-container"><img src="${avatar}" class="char-img" alt="${name}" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=85c1e9&color=fff'"></div>
-                        <div class="char-info"><div class="seat-name ${fontSize}">${name || "KOSONG"}</div></div>
-                        <div class="seat-number">MEJA ${actualCol + 1}</div>
+                        <div class="char-info"><div class="seat-name ${fontSize}">${name || t.emptySeat}</div></div>
+                        <div class="seat-number">${t.seatNum}${actualCol + 1}</div>
                     `;
                 }
                 container.appendChild(div);
@@ -967,6 +1056,7 @@
     }
 
     function renderNameList() {
+        const t = i18n[currentLang];
         const list = document.getElementById('nameListContainer');
         const q = document.getElementById('searchInput').value.toUpperCase();
         list.innerHTML = '';
@@ -974,9 +1064,9 @@
             if (item.name.includes(q)) {
                 const div = document.createElement('div');
                 div.className = `name-item ${!item.active ? 'eliminated' : ''}`;
-                const btn = item.active ? 'HADIR' : 'ABSEN';
+                const btn = item.active ? t.statHadir : t.statAbsen;
                 const cls = item.active ? 'btn-status-on' : 'btn-status-off';
-                div.innerHTML = `<span>${item.name}</span><div style="display:flex;"><button class="action-btn ${cls}" onclick="masterNames[${idx}].active = !masterNames[${idx}].active; renderNameList(); distributeNames(); saveToHistory(); renderSeats(); saveState();">${btn}</button><button class="action-btn btn-edit" onclick="const n = prompt('Nama:', masterNames[${idx}].name); if(n) { const old = masterNames[${idx}].name; masterNames[${idx}].name = n; seats.forEach(s => { if(s.currentName === old) s.currentName = n; }); renderNameList(); renderSeats(); saveState(); }">✎</button><button class="action-btn btn-del" onclick="if(confirm('Hapus?')) { masterNames.splice(${idx}, 1); renderNameList(); distributeNames(); renderSeats(); saveState(); }">🗑</button></div>`;
+                div.innerHTML = `<span>${item.name}</span><div style="display:flex;"><button class="action-btn ${cls}" onclick="masterNames[${idx}].active = !masterNames[${idx}].active; renderNameList(); distributeNames(); saveToHistory(); renderSeats(); saveState();">${btn}</button><button class="action-btn btn-edit" onclick="const n = prompt('${t.pmtName}', masterNames[${idx}].name); if(n) { const old = masterNames[${idx}].name; masterNames[${idx}].name = n; seats.forEach(s => { if(s.currentName === old) s.currentName = n; }); renderNameList(); renderSeats(); saveState(); }">✎</button><button class="action-btn btn-del" onclick="if(confirm('${t.confDel}')) { masterNames.splice(${idx}, 1); renderNameList(); distributeNames(); renderSeats(); saveState(); }">🗑</button></div>`;
                 list.appendChild(div);
             }
         });
@@ -988,6 +1078,9 @@
             renderSeats();
             applyBackground(); 
         }
+        
+        applyLangUI(); 
+
         const theme = localStorage.getItem('theme');
         if (theme === 'dark') {
             document.documentElement.setAttribute('data-theme', 'dark');
